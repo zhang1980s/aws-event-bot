@@ -17,10 +17,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Text struct {
-	Content string `json:"content"`
-}
-
 type Markdown struct {
 	Title string `json:"title"`
 	Text  string `json:"text"`
@@ -28,7 +24,6 @@ type Markdown struct {
 
 type OapiRobotSendRequest struct {
 	MsgType  string   `json:"msgtype"`
-	Text     Text     `json:"text,omitempty"`
 	Markdown Markdown `json:"markdown,omitempty"`
 }
 
@@ -58,21 +53,6 @@ type HealthEvent struct {
 		StatusCode        string `json:"statusCode,omitempty"`
 		EventScopeCode    string `json:"eventScopeCode,omitempty"`
 	} `json:"detail,omitempty"`
-}
-
-type EC2InstanceStageChangeEvent struct {
-	Account string `json:"account,omitempty"`
-	Detail  struct {
-		Instance_Id string `json:"instance-id,omitempty"`
-		State       string `json:"state,omitempty"`
-	} `json:"detail,omitempty"`
-	Detail_Type string   `json:"detail-type,omitempty"`
-	ID          string   `json:"id,omitempty"`
-	Region      string   `json:"region,omitempty"`
-	Resources   []string `json:"resources,omitempty"`
-	Source      string   `json:"source,omitempty"`
-	Time        string   `json:"time,omitempty"`
-	Version     string   `json:"version,omitempty"`
 }
 
 func GetSecretValue(ctx context.Context) (string, string, error) {
@@ -121,6 +101,8 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 
 	snsMsg := snsEvent.Records[0].SNS.Message
 
+	logrus.Infof(snsMsg)
+
 	var healthevent HealthEvent
 
 	err := json.Unmarshal([]byte(snsMsg), &healthevent)
@@ -135,8 +117,7 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 		MsgType: "markdown",
 		Markdown: Markdown{
 			Title: secretKey,
-			//			Text:  "# AWS Health Event Notification\n --- \n\n#### **Detail type:**\n" + healthevent.DetailType + "\n#### AWS **账号**",
-			Text: snsMsg,
+			Text:  "# AWS Health Event Notification\n --- \n\n#### **Detail type:**\n" + healthevent.DetailType + "\n#### AWS **账号**",
 		},
 	}
 
@@ -144,13 +125,16 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	if err != nil {
 		return fmt.Errorf("error encoding JSON: %v", err)
 	}
-
-	logrus.Infof(string(jsonReq))
+	logrus.Infof("jsonReq: %s", jsonReq)
+	logrus.Infof("webhook: %s", secretValue)
 
 	httpReq, err := http.NewRequest("POST", secretValue, bytes.NewBuffer(jsonReq))
 	if err != nil {
 		return fmt.Errorf("error creating HTTP request: %v", err)
 	}
+
+	logrus.Infof("httpReq: %v", httpReq)
+
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	client := http.DefaultClient
@@ -160,7 +144,12 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	}
 	defer resp.Body.Close()
 
+	logrus.Infof("resp: %v", resp)
+
 	var jsonResp OapiRobotSendResponse
+
+	logrus.Infof("jsonResp: %v", jsonResp)
+
 	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
 	if err != nil {
 		return fmt.Errorf("error decoding JSON: %v", err)
