@@ -125,15 +125,15 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	if err != nil {
 		return fmt.Errorf("error encoding JSON: %v", err)
 	}
-	logrus.Infof("jsonReq: %s", jsonReq)
-	logrus.Infof("webhook: %s", secretValue)
+	//	logrus.Infof("jsonReq: %s", jsonReq)
+	//	logrus.Infof("webhook: %s", secretValue)
 
 	httpReq, err := http.NewRequest("POST", secretValue, bytes.NewBuffer(jsonReq))
 	if err != nil {
 		return fmt.Errorf("error creating HTTP request: %v", err)
 	}
 
-	logrus.Infof("httpReq: %v", httpReq)
+	//	logrus.Infof("httpReq: %v", httpReq)
 
 	httpReq.Header.Set("Content-Type", "application/json")
 
@@ -144,11 +144,11 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	}
 	defer resp.Body.Close()
 
-	logrus.Infof("resp: %v", resp)
+	//	logrus.Infof("resp: %v", resp)
 
 	var jsonResp OapiRobotSendResponse
 
-	logrus.Infof("jsonResp: %v", jsonResp)
+	//	logrus.Infof("jsonResp: %v", jsonResp)
 
 	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
 	if err != nil {
