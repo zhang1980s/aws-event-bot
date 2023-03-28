@@ -1,6 +1,6 @@
 {
     "version": "0",
-    "id": "7bf73129-1428-4cd3-a780-95db273d1602",
+    "id": "99999999-9999-9999-9990-999999999999",
     "detail-type": "AWS Health Event",
     "source": "aws.health",
     "account": "123456789012",
@@ -8,7 +8,7 @@
     "region": "ap-southeast-2",
     "resources": [],
     "detail": {
-        "arn": "arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_cf77b850-c91b-463c-a7e5-185ae5597a73",
+        "arn": "arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999",
         "service": "KAFKA",
         "eventTypeCode": "AWS_KAFKA_SECURITY_PATCHING_EVENT",
         "eventTypeCategory": "scheduledChange",
