@@ -19,12 +19,12 @@ lambda采取markdown格式输出到钉钉机器人，消息样式如下：
 
 
 1. 安装SAM
-安装SAM环境请参考[Installing the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+参考文档：[Installing the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
 
 2. 安装Golang环境
 lambda代码采用golang开发，因此部署环境需要有golang编译环境。
 lambda开发环境： go1.18.3 ,相对新的go版本都可以支持。
-[Download and install Golang](https://go.dev/doc/install)
+参考文档：[Download and install Golang](https://go.dev/doc/install)
 
 3. 下载代码
 从github上下载代码：
@@ -35,7 +35,8 @@ https://github.com/zhang1980s/aws-event-bot.git
 
 
 4. 创建钉钉机器人
-参考钉钉开放平台文档接入自定义机器人[自定义机器人接入](https://open.dingtalk.com/document/robots/custom-robot-access#title-zob-eyu-qse)
+根据钉钉开放平台文档接入自定义机器人
+参考文档：[自定义机器人接入](https://open.dingtalk.com/document/robots/custom-robot-access#title-zob-eyu-qse)
 
 **注意保留钉钉机器人的WebHook地址以及对应的关键字（安全token）**
 
@@ -48,6 +49,8 @@ sam build ; sam deploy --stack-name <应用名称> --stack--parameter-overrides 
 ```
 
 如果需要部署多个机器人，例如（DBA消息机器人、安全消息机器人、指定业务消息机器人）建议分别创建每个机器人的目录，并且分别把部署代码及lambda代码放置在相关代码路径中以保证配置的独立性。
+
+由于Health API默认的Endpoint是在us-east-1地区，不考虑高可用的场景下，机器人**必须**部署在us-east-1地区。
 
 6. 修改配置（可选）
 
@@ -77,4 +80,5 @@ TBD （可忽略不计的小成本）
 1. 支持飞书
 2. 支持企业微信
 3. 支持更丰富的样式
+4. Health API  高可用
 
