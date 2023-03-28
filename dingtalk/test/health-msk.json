@@ -6,7 +6,7 @@
     "account": "123456789012",
     "time": "2016-06-05T06:27:57Z",
     "region": "ap-southeast-2",
-    "resources": ["AAA"],
+    "resources": [],
     "detail": {
         "arn": "arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_cf77b850-c91b-463c-a7e5-185ae5597a73",
         "service": "KAFKA",
