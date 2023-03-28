@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -113,11 +114,13 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 
 	secretValue, secretKey, _ := GetSecretValue(ctx)
 
+	resourcelist := strings.Join(healthevent.Resources, ",")
+
 	req := OapiRobotSendRequest{
 		MsgType: "markdown",
 		Markdown: Markdown{
 			Title: secretKey + "**事件**",
-			Text:  "# AWS 健康事件通知\n --- \n\n#### **事件类型:**\t" + healthevent.DetailType + "\n#### **账号**\t" + healthevent.Account + "\n#### **时间**\t" + healthevent.Time + "\n#### **地区**\t" + healthevent.Region + "\n#### **资源**\t" + healthevent.Account + "\n#### **ARN**\t" + healthevent.Detail.Arn + "\n##### **具体服务**\t" + healthevent.Detail.Service + "\n##### **具体事件类型码**\t" + healthevent.Detail.EventTypeCode + "\n##### **具体地区**\t" + healthevent.Detail.Region + "\n##### **开始时间**\t" + healthevent.Detail.StartTime + "\n##### **结束时间**\t" + healthevent.Detail.EndTime + "\n##### **最后更新时间**\t" + healthevent.Detail.LastUpdatedTime + "\n##### **事件状态码**\t" + healthevent.Detail.StatusCode + "\n##### **事件范围码**\t" + healthevent.Detail.EventScopeCode,
+			Text:  "# AWS 健康事件通知\n --- \n\n#### **事件类型:**\t" + healthevent.DetailType + "\n#### **账号:**\t" + healthevent.Account + "\n#### **时间:**\t" + healthevent.Time + "\n#### **地区:**\t" + healthevent.Region + "\n#### **资源:**\t" + resourcelist + "\n#### **ARN:**\t" + healthevent.Detail.Arn + "\n##### **具体服务:**\t" + healthevent.Detail.Service + "\n##### **具体事件类型码:**\t" + healthevent.Detail.EventTypeCode + "\n##### **具体地区:**\t" + healthevent.Detail.Region + "\n##### **开始时间:**\t" + healthevent.Detail.StartTime + "\n##### **结束时间:**\t" + healthevent.Detail.EndTime + "\n##### **最后更新时间:**\t" + healthevent.Detail.LastUpdatedTime + "\n##### **事件状态码:**\t" + healthevent.Detail.StatusCode + "\n##### **事件范围码:**\t" + healthevent.Detail.EventScopeCode,
 		},
 	}
 
