@@ -24,6 +24,7 @@ lambda采取markdown格式输出到钉钉机器人，消息样式如下：
 2. 安装Golang环境
 lambda代码采用golang开发，因此部署环境需要有golang编译环境。
 lambda开发环境： go1.18.3 ,相对新的go版本都可以支持。
+
 参考文档：[Download and install Golang](https://go.dev/doc/install)
 
 3. 下载代码
@@ -35,7 +36,8 @@ https://github.com/zhang1980s/aws-event-bot.git
 
 
 4. 创建钉钉机器人
-根据钉钉开放平台文档接入自定义机器人
+根据钉钉开放平台文档接入自定义机器人。
+
 参考文档：[自定义机器人接入](https://open.dingtalk.com/document/robots/custom-robot-access#title-zob-eyu-qse)
 
 **注意保留钉钉机器人的WebHook地址以及对应的关键字（安全token）**
