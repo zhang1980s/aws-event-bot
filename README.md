@@ -57,7 +57,18 @@ sam build ; sam deploy --stack-name <应用名称> --stack--parameter-overrides 
 具体修改方式，可以参考官方文档[Build the event pattern](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule.html)
 
 7. 测试
+可以通过把示例Health event发送到sns的方式测试机器人是否可以正常工作.
+
+用部署好的SNS ARN替代示例中的SNS ARN
+```
+aws sns publish --region us-east-1 --topic-arn <SNS ARN> --message '{"version":"0","id":"99999999-9999-9999-9990-999999999999","detail-type":"AWS Health Event","source":"aws.health","account":"123456789012","time":"2016-06-05T06:27:57Z","region":"ap-southeast-2","resources":[],"detail":{"arn":"arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999","service":"KAFKA","eventTypeCode":"AWS_KAFKA_SECURITY_PATCHING_EVENT","eventTypeCategory":"scheduledChange","region":"us-west-2","startTime":"2023-03-09T23:00:00+08:00","endTime":"2023-03-10T03:00:00+08:00","lastUpdatedTime":"2023-03-02T23:02:12.808000+08:00","statusCode":"closed","eventScopeCode":"ACCOUNT_SPECIFIC"}}'
+```
+
 8. 把机器人拉入相关钉钉群
+依据机器人可推送的事件属性加入相关群即可。
+
+### 成本
+TBD （可忽略不计的小成本）
 
 
 
