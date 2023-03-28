@@ -67,6 +67,7 @@ WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_
 ```
 
 具体修改方式，可以参考EventBridge官方文档。
+
 参考文档：[Build the event pattern](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule.html)
 
 7. 测试
@@ -78,6 +79,7 @@ aws sns publish --region us-east-1 --topic-arn <SNS ARN> --message '{"version":"
 ```
 
 8. 把机器人拉入相关钉钉群
+
 依据机器人可推送的事件属性加入相关群即可。
 
 ### 成本
