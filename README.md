@@ -10,6 +10,9 @@ AWS通过Health Dashboard及Health API实时把AWS服务的健康事件，指定
 方案参考架构图如下：
 ![钉钉机器人推送架构](dingtalk/picture/dingtalk-event-bot.png)
 
+### 消息样式
+lambda采取markdown格式输出到钉钉机器人，消息样式如下：
+![消息样式](dingtalk/picture/dingtalk-bot-healthevent-format.jpeg)
 
 ### 部署及配置方式
 本方案采用AWS Serverless Application Module部署
