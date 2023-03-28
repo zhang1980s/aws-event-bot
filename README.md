@@ -31,7 +31,7 @@ lambda开发环境： go1.18.3 ,相对新的go版本都可以支持。
 从github上下载代码：
 
 ```
-https://github.com/zhang1980s/aws-event-bot.git
+git clone https://github.com/zhang1980s/aws-event-bot.git
 ```
 
 
@@ -49,6 +49,8 @@ https://github.com/zhang1980s/aws-event-bot.git
 cd dingtalk
 sam build ; sam deploy --stack-name <应用名称> --stack--parameter-overrides WebHook="<WebHook地址>" BotSecretKey="<关键字>" --region us-east-1
 ```
+
+WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_SECRET_ARN环境变量获取到WebHook地址信息的ARN。另外每个机器人都需要有个关键字（安全Token），这个关键字在部署后会被写入到lambda的BOT_SECRET_KEY环境变量中。lambda执行时会取出这个关键字加入到发送给钉钉的消息的题目中。因此WebHook地址和关键字两个参数必须在创建时指定，否则lambda执行时会报错退出。
 
 如果需要部署多个机器人，例如（DBA消息机器人、安全消息机器人、指定业务消息机器人）建议分别创建每个机器人的目录，并且分别把部署代码及lambda代码放置在相关代码路径中以保证配置的独立性。
 
