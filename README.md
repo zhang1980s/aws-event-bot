@@ -1,2 +1,63 @@
-# AWSEventNotificationBot
-Forward AWS Event to IM Bot 
+# 推送AWS服务健康及维护信息到阿里钉钉自定义机器人
+
+---
+
+### 背景信息
+
+AWS通过Health Dashboard及Health API实时把AWS服务的健康事件，指定服务的维护事件及事件反馈给用户。本方案通过AWS Serverless服务把相关事件推送到阿里钉钉机器人实现实时消息接入。
+
+### 架构图
+方案参考架构图如下：
+![钉钉机器人推送架构](dingtalk/picture/dingtalk-event-bot.png)
+
+
+### 部署及配置方式
+本方案采用AWS Serverless Application Module部署
+
+
+1. 安装SAM
+安装SAM环境请参考[Installing the AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+
+2. 安装Golang环境
+lambda代码采用golang开发，因此部署环境需要有golang编译环境。
+lambda开发环境： go1.18.3 ,相对新的go版本都可以支持。
+[Download and install Golang](https://go.dev/doc/install)
+
+3. 下载代码
+从github上下载代码：
+
+```
+https://github.com/zhang1980s/aws-event-bot.git
+```
+
+
+4. 创建钉钉机器人
+参考钉钉开放平台文档接入自定义机器人[自定义机器人接入](https://open.dingtalk.com/document/robots/custom-robot-access#title-zob-eyu-qse)
+
+**注意保留钉钉机器人的WebHook地址以及对应的关键字（安全token）**
+
+5. 部署代码
+通过sam cli部署代码
+
+```
+cd dingtalk
+sam build ; sam deploy --stack-name <应用名称> --stack--parameter-overrides WebHook="<WebHook地址>" BotSecretKey="<关键字>" --region us-east-1
+```
+
+如果需要部署多个机器人，例如（DBA消息机器人、安全消息机器人、指定业务消息机器人）建议分别创建每个机器人的目录，并且分别把部署代码及lambda代码放置在相关代码路径中以保证配置的独立性。
+
+6. 修改配置（可选）
+
+设置机器人只接受特定类型的事件，需要通过定制EventBridge rule中的EventPattern来实现。修改位置在template.yml文件中的下面段落：
+
+```
+      EventPattern: {"detail-type": ["AWS Health Event"],"source": ["aws.health"]}
+```
+
+具体修改方式，可以参考官方文档[Build the event pattern](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule.html)
+
+7. 测试
+8. 把机器人拉入相关钉钉群
+
+
+
