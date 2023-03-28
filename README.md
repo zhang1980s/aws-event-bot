@@ -50,7 +50,7 @@ sam build ; sam deploy --stack-name <应用名称> --stack--parameter-overrides 
 
 如果需要部署多个机器人，例如（DBA消息机器人、安全消息机器人、指定业务消息机器人）建议分别创建每个机器人的目录，并且分别把部署代码及lambda代码放置在相关代码路径中以保证配置的独立性。
 
-由于Health API默认的Endpoint是在us-east-1地区，不考虑高可用的场景下，机器人**必须**部署在us-east-1地区。
+由于Health API默认的Endpoint是在us-east-1地区，不考虑高可用的场景下，本应用**必须**部署在us-east-1地区。
 
 6. 修改配置（可选）
 
