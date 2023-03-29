@@ -17,7 +17,7 @@ lambda采取markdown格式输出到钉钉机器人，消息样式如下：
 ### 部署及配置方式
 本方案采用AWS无服务架构，并且通过AWS Serverless Application Module（SAM）方式部署。
 
-每个lambda应用（![lambda application](https://docs.aws.amazon.com/lambda/latest/dg/deploying-lambda-apps.html)）对应一个机器人部署，包含一个EventBridge rule, 一个SNS topic，一个lambda函数以及SecretManager中的一个Secret（架构图中的绿色部分）。
+每个lambda应用（[lambda application](https://docs.aws.amazon.com/lambda/latest/dg/deploying-lambda-apps.html)）对应一个机器人部署，包含一个EventBridge rule, 一个SNS topic，一个lambda函数以及SecretManager中的一个Secret（架构图中的绿色部分）。
 
 
 1. 安装SAM
