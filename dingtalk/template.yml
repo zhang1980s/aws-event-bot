@@ -29,6 +29,8 @@ Resources:
 
   DingTalkEndpointSecret:
     Type: AWS::SecretsManager::Secret
+      DeletionPolicy: Delete
+      UpdateReplacePolicy: Delete
     Properties:
       Description: Secret to store the endpoint
       SecretString: !Ref WebHook
