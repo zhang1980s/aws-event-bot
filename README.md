@@ -47,7 +47,7 @@ git clone https://github.com/zhang1980s/aws-event-bot.git
 
 ```
 cd dingtalk
-sam build ; sam deploy --stack-name <应用名称> --stack--parameter-overrides WebHook="<WebHook地址>" BotSecretKey="<关键字>" --region us-east-1
+sam build ; sam deploy --stack-name <应用名称> --parameter-overrides WebHook="<WebHook地址>" BotSecretKey="<关键字>" --region us-east-1
 ```
 
 WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_SECRET_ARN环境变量获取到WebHook地址信息的ARN。
@@ -73,7 +73,7 @@ WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_
 7. 测试
 可以通过把示例Health event发送到sns的方式测试机器人是否可以正常工作.
 
-用部署好的SNS ARN替代示例中的SNS ARN
+用部署好的SNS ARN替代示例中的SNS ARN (SNS ARN可以在sam deploy 输出的结果中获取)
 ```
 aws sns publish --region us-east-1 --topic-arn <SNS ARN> --message '{"version":"0","id":"99999999-9999-9999-9990-999999999999","detail-type":"AWS Health Event","source":"aws.health","account":"123456789012","time":"2016-06-05T06:27:57Z","region":"ap-southeast-2","resources":[],"detail":{"arn":"arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999","service":"KAFKA","eventTypeCode":"AWS_KAFKA_SECURITY_PATCHING_EVENT","eventTypeCategory":"scheduledChange","region":"us-west-2","startTime":"2023-03-09T23:00:00+08:00","endTime":"2023-03-10T03:00:00+08:00","lastUpdatedTime":"2023-03-02T23:02:12.808000+08:00","statusCode":"closed","eventScopeCode":"ACCOUNT_SPECIFIC"}}'
 ```
