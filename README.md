@@ -15,7 +15,9 @@ lambda采取markdown格式输出到钉钉机器人，消息样式如下：
 ![消息样式](dingtalk/picture/dingtalk-bot-healthevent-format.jpeg)
 
 ### 部署及配置方式
-本方案采用AWS Serverless Application Module部署
+本方案采用AWS无服务架构，并且通过AWS Serverless Application Module（SAM）方式部署。
+
+每个lambda应用（lambda application）对应一个机器人部署，包含一个EventBridge rule, 一个SNS topic，一个lambda函数以及SecretManager中的一个Secret（架构图中的绿色部分）。
 
 
 1. 安装SAM
@@ -54,7 +56,7 @@ WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_
 
 每个机器人都需要有个关键字（安全Token），这个关键字在部署后会被写入到lambda的BOT_SECRET_KEY环境变量中，lambda执行时会取出这个关键字加入到发送给钉钉的消息的题目中。因此WebHook地址和关键字两个参数必须在应用创建（sam deploy）时指定，否则lambda执行时会报错退出。
 
-如果需要部署多个机器人，例如（DBA消息机器人、安全消息机器人、指定业务消息机器人）建议分别创建每个机器人的目录，并且分别把部署代码及lambda代码放置在相关代码路径中以保证配置的独立性。
+如果需要部署多个机器人负责推送不同类型的消息给对应的成员，例如（DBA消息机器人、安全消息机器人、指定业务消息机器人）,建议分别为每个机器人创建目录，并且分别把SAM模版及lambda代码放置在相关代码路径中以保证配置的独立性。
 
 由于Health API默认的Endpoint是在us-east-1地区，不考虑高可用的场景下，本应用**必须**部署在us-east-1地区。
 
@@ -73,7 +75,7 @@ WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_
 7. 测试
 可以通过把示例Health event发送到sns的方式测试机器人是否可以正常工作.
 
-用部署好的SNS ARN替代示例中的SNS ARN (SNS ARN可以在sam deploy 输出的结果中获取)
+用部署好的SNS ARN替代示例中的SNS ARN (SNS ARN可以在sam deploy 输出的结果中获取)。
 ```
 aws sns publish --region us-east-1 --topic-arn <SNS ARN> --message '{"version":"0","id":"99999999-9999-9999-9990-999999999999","detail-type":"AWS Health Event","source":"aws.health","account":"123456789012","time":"2016-06-05T06:27:57Z","region":"ap-southeast-2","resources":[],"detail":{"arn":"arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999","service":"KAFKA","eventTypeCode":"AWS_KAFKA_SECURITY_PATCHING_EVENT","eventTypeCategory":"scheduledChange","region":"us-west-2","startTime":"2023-03-09T23:00:00+08:00","endTime":"2023-03-10T03:00:00+08:00","lastUpdatedTime":"2023-03-02T23:02:12.808000+08:00","statusCode":"closed","eventScopeCode":"ACCOUNT_SPECIFIC"}}'
 ```
