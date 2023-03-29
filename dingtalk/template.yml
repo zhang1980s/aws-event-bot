@@ -29,8 +29,8 @@ Resources:
 
   DingTalkEndpointSecret:
     Type: AWS::SecretsManager::Secret
-      DeletionPolicy: Delete
-      UpdateReplacePolicy: Delete
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
     Properties:
       Description: Secret to store the endpoint
       SecretString: !Ref WebHook
@@ -67,8 +67,6 @@ Outputs :
   SNSArn:
     Value: !GetAtt DingTalkEventTopic.TopicArn
   WebHook:
-    Description: "The Webhook address"
     Value: !Ref WebHook
   BotSecretKey:
-    Description: "The SecretKey of Bot"
     Value: !Ref BotSecretKey
