@@ -154,6 +154,7 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	//	logrus.Infof("jsonResp: %v", jsonResp)
 
 	err = json.NewDecoder(resp.Body).Decode(&jsonResp)
+
 	if err != nil {
 		return fmt.Errorf("error decoding JSON: %v", err)
 	}
