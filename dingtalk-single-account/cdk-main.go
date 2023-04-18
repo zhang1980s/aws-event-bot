@@ -57,7 +57,7 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	dingTalkCustomBotSecret := awssecretsmanager.NewSecret(stack, jsii.String("DingTalkCustomBotSecret"), &awssecretsmanager.SecretProps{
 		Description:       jsii.String("Secret to store the endpoint"),
-		SecretStringValue: webHook.ValueAsString(),
+		SecretStringValue: awscdk.SecretValue_CfnParameter(webHook),
 	})
 
 	// DingTalk CustomBot Lambda
