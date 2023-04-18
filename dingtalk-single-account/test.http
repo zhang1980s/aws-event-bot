@@ -1,0 +1,10 @@
+POST https://oapi.dingtalk.com/robot/send?access_token=xxx HTTP/1.1
+Content-Type: application/json
+
+    {
+        "msgtype": "text",
+        "text":
+            {
+                "content":"AWS我就是我, 是不一样的烟火"
+            }
+    }
