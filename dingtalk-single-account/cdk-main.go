@@ -33,6 +33,7 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 	webHook := awscdk.NewCfnParameter(stack, jsii.String("WebHook"), &awscdk.CfnParameterProps{
 		Description: jsii.String("The DingTalk CustomBot Webhook Endpoint"),
 		Type:        jsii.String("String"),
+		NoEcho:      jsii.Bool(true),
 	})
 
 	botSecretKey := awscdk.NewCfnParameter(stack, jsii.String("BotSecretKey"), &awscdk.CfnParameterProps{
@@ -64,13 +65,13 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	dingTalkCustomBotHandler := awslambda.NewFunction(stack, jsii.String("DingTalkCustomBotHandler"), &awslambda.FunctionProps{
 		Code:       awslambda.Code_FromAsset(jsii.String("eventHandler"), nil),
-		Handler:    jsii.String("bing/main"),
+		Handler:    jsii.String("bin/main"),
 		Runtime:    awslambda.Runtime_GO_1_X(),
 		MemorySize: jsii.Number(128),
 		Timeout:    awscdk.Duration_Seconds(jsii.Number(10)),
 	})
 
-	dingTalkCustomBotHandler.AddEnvironment(jsii.String("Bot_SECRET_KEY"), botSecretKey.ValueAsString(), nil)
+	dingTalkCustomBotHandler.AddEnvironment(jsii.String("BOT_SECRET_KEY"), botSecretKey.ValueAsString(), nil)
 
 	dingTalkCustomBotHandler.AddEnvironment(jsii.String("WEBHOOK_SECRET_ARN"), dingTalkCustomBotSecret.SecretArn(), nil)
 

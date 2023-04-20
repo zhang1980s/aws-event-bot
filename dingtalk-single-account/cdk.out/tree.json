@@ -1,0 +1,453 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "DintTalkEventBotStack": {
+        "id": "DintTalkEventBotStack",
+        "path": "DintTalkEventBotStack",
+        "children": {
+          "WebHook": {
+            "id": "WebHook",
+            "path": "DintTalkEventBotStack/WebHook",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.75.0"
+            }
+          },
+          "BotSecretKey": {
+            "id": "BotSecretKey",
+            "path": "DintTalkEventBotStack/BotSecretKey",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.75.0"
+            }
+          },
+          "DingTalkEventTopic": {
+            "id": "DingTalkEventTopic",
+            "path": "DintTalkEventBotStack/DingTalkEventTopic",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "DintTalkEventBotStack/DingTalkEventTopic/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::SNS::Topic",
+                  "aws:cdk:cloudformation:props": {
+                    "displayName": "DingTalkEventTopic"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_sns.CfnTopic",
+                  "version": "2.75.0"
+                }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "DintTalkEventBotStack/DingTalkEventTopic/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "DintTalkEventBotStack/DingTalkEventTopic/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::SNS::TopicPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sns:Publish",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "events.amazonaws.com"
+                              },
+                              "Resource": {
+                                "Ref": "DingTalkEventTopic14EC62A5"
+                              },
+                              "Sid": "0"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "topics": [
+                          {
+                            "Ref": "DingTalkEventTopic14EC62A5"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_sns.CfnTopicPolicy",
+                      "version": "2.75.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_sns.TopicPolicy",
+                  "version": "2.75.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_sns.Topic",
+              "version": "2.75.0"
+            }
+          },
+          "HealthEventRule": {
+            "id": "HealthEventRule",
+            "path": "DintTalkEventBotStack/HealthEventRule",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "DintTalkEventBotStack/HealthEventRule/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Events::Rule",
+                  "aws:cdk:cloudformation:props": {
+                    "description": "Health Event Notification Rule",
+                    "eventPattern": {
+                      "detail-type": [
+                        "AWS Health Event"
+                      ],
+                      "source": [
+                        "aws.health"
+                      ]
+                    },
+                    "state": "ENABLED",
+                    "targets": [
+                      {
+                        "id": "Target0",
+                        "arn": {
+                          "Ref": "DingTalkEventTopic14EC62A5"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_events.CfnRule",
+                  "version": "2.75.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_events.Rule",
+              "version": "2.75.0"
+            }
+          },
+          "DingTalkCustomBotSecret": {
+            "id": "DingTalkCustomBotSecret",
+            "path": "DintTalkEventBotStack/DingTalkCustomBotSecret",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "DintTalkEventBotStack/DingTalkCustomBotSecret/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::SecretsManager::Secret",
+                  "aws:cdk:cloudformation:props": {
+                    "description": "Secret to store the endpoint",
+                    "secretString": {
+                      "Ref": "WebHook"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_secretsmanager.CfnSecret",
+                  "version": "2.75.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_secretsmanager.Secret",
+              "version": "2.75.0"
+            }
+          },
+          "DingTalkCustomBotHandler": {
+            "id": "DingTalkCustomBotHandler",
+            "path": "DintTalkEventBotStack/DingTalkCustomBotHandler",
+            "children": {
+              "ServiceRole": {
+                "id": "ServiceRole",
+                "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/ServiceRole",
+                "children": {
+                  "ImportServiceRole": {
+                    "id": "ImportServiceRole",
+                    "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/ServiceRole/ImportServiceRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.75.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/ServiceRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "managedPolicyArns": [
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "arn:",
+                                {
+                                  "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.75.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/ServiceRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/ServiceRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": "secretsmanager:GetSecretValue",
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Ref": "DingTalkCustomBotSecret7217D00E"
+                                  }
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "DingTalkCustomBotHandlerServiceRoleDefaultPolicy6B115354",
+                            "roles": [
+                              {
+                                "Ref": "DingTalkCustomBotHandlerServiceRole5887D52B"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.75.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.75.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.75.0"
+                }
+              },
+              "Code": {
+                "id": "Code",
+                "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.75.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.75.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.75.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": "cdk-hnb659fds-assets-894855526703-ap-southeast-1",
+                      "s3Key": "7ba7f848ea4664079ea8909dfccf27f0c8133f28dedcf3259ca8037bc6d90145.zip"
+                    },
+                    "role": {
+                      "Fn::GetAtt": [
+                        "DingTalkCustomBotHandlerServiceRole5887D52B",
+                        "Arn"
+                      ]
+                    },
+                    "environment": {
+                      "variables": {
+                        "BOT_SECRET_KEY": {
+                          "Ref": "BotSecretKey"
+                        },
+                        "WEBHOOK_SECRET_ARN": {
+                          "Ref": "DingTalkCustomBotSecret7217D00E"
+                        }
+                      }
+                    },
+                    "handler": "bin/main",
+                    "memorySize": 128,
+                    "runtime": "go1.x",
+                    "timeout": 10
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.75.0"
+                }
+              },
+              "AllowInvoke:DintTalkEventBotStackDingTalkEventTopic3FFBD508": {
+                "id": "AllowInvoke:DintTalkEventBotStackDingTalkEventTopic3FFBD508",
+                "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/AllowInvoke:DintTalkEventBotStackDingTalkEventTopic3FFBD508",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "DingTalkCustomBotHandlerFA86D2A3",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "sns.amazonaws.com",
+                    "sourceArn": {
+                      "Ref": "DingTalkEventTopic14EC62A5"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                  "version": "2.75.0"
+                }
+              },
+              "DingTalkEventTopic": {
+                "id": "DingTalkEventTopic",
+                "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/DingTalkEventTopic",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "DintTalkEventBotStack/DingTalkCustomBotHandler/DingTalkEventTopic/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::SNS::Subscription",
+                      "aws:cdk:cloudformation:props": {
+                        "protocol": "lambda",
+                        "topicArn": {
+                          "Ref": "DingTalkEventTopic14EC62A5"
+                        },
+                        "endpoint": {
+                          "Fn::GetAtt": [
+                            "DingTalkCustomBotHandlerFA86D2A3",
+                            "Arn"
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_sns.CfnSubscription",
+                      "version": "2.75.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_sns.Subscription",
+                  "version": "2.75.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda.Function",
+              "version": "2.75.0"
+            }
+          },
+          "SNSArn": {
+            "id": "SNSArn",
+            "path": "DintTalkEventBotStack/SNSArn",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.75.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "DintTalkEventBotStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "DintTalkEventBotStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.75.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.2.0"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "DintTalkEventBotStack/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.75.0"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "DintTalkEventBotStack/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.75.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.75.0"
+        }
+      },
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.2.0"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.75.0"
+    }
+  }
+}
