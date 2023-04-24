@@ -1,10 +1,10 @@
-module dingtalk-single-account
+module dingtalk-multi-account
 
 go 1.18
 
 require (
-	github.com/aws/aws-cdk-go/awscdk/v2 v2.75.0
-	github.com/aws/constructs-go/constructs/v10 v10.2.0
+	github.com/aws/aws-cdk-go/awscdk/v2 v2.76.0
+	github.com/aws/constructs-go/constructs/v10 v10.2.5
 	github.com/aws/jsii-runtime-go v1.80.0
 )
 

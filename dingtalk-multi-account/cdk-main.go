@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsevents"
@@ -54,7 +55,7 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	healthEventRule := awsevents.NewRule(stack, jsii.String("HealthEventRule"), &awsevents.RuleProps{
 		Description:  jsii.String("Health Event Notification Rule"),
-		EventPattern: &awsevents.EventPattern{DetailType: &[]*string{jsii.String("AWS Health Event")}, Source: &[]*string{jsii.String("aws.health")}},
+		EventPattern: &awsevents.EventPattern{DetailType: &[]*string{jsii.String("AWS Health Event"), jsii.String("CUSTOM")}, Source: &[]*string{jsii.String("aws.health"), jsii.String("custom.dingtalkevent.test")}},
 		Enabled:      jsii.Bool(true),
 		EventBus:     healthEventBus,
 	})
@@ -92,7 +93,59 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	dingTalkEventTopic.AddSubscription(awssnssubscriptions.NewLambdaSubscription(dingTalkCustomBotHandler, nil))
 
-	// Output SNS ARN for test propose
+	yaml := `---
+AWSTemplateFormatVersion: 2010-09-09
+Description: EventBridgeRule
+Resources:
+  EventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Forward event to HealthEventBus
+      EventBusName: default
+      State: ENABLED
+      EventPattern:
+        source:
+        - custom.dingtalkevent.test
+      Targets:
+      - Arn: "EVENTBUSARN"
+        Id: dingtalk-eventbus-account
+        RoleArn:
+          Fn::GetAtt:
+          - EventBridgeIAMrole
+          - Arn
+  EventBridgeIAMrole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              Fn::Sub: events.amazonaws.com
+          Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: PutEventsDestinationBus
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - events:PutEvents
+            Resource:
+            - "EVENTBUSARN"`
+
+	awscdk.NewCfnStackSet(stack, jsii.String("HealthEventRuleStackSet"), &awscdk.CfnStackSetProps{
+		PermissionModel: jsii.String("SERVICE_MANAGED"),
+		StackSetName:    jsii.String("HealthEventRuleStackSet"),
+		AutoDeployment: &awscdk.CfnStackSet_AutoDeploymentProperty{
+			Enabled:                      jsii.Bool(true),
+			RetainStacksOnAccountRemoval: jsii.Bool(true),
+		},
+		TemplateBody: jsii.String(strings.Replace(yaml, "EVENTBUSARN", *healthEventBus.EventBusArn(), -1)),
+		Capabilities: jsii.Strings("CAPABILITY_NAMED_IAM"),
+	})
 
 	awscdk.NewCfnOutput(stack, jsii.String("SNSArn"), &awscdk.CfnOutputProps{
 		Value: dingTalkEventTopic.TopicArn(),
@@ -105,7 +158,7 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 func main() {
 	app := awscdk.NewApp(nil)
 
-	NewDingTalkEventBotStack(app, "DintTalkEventBotStack", &DingTalkEventBotStackProps{
+	NewDingTalkEventBotStack(app, "DingTalkEventBotStack", &DingTalkEventBotStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},

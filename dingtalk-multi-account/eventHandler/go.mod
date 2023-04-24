@@ -3,6 +3,7 @@ module eventHandler
 go 1.18
 
 require (
+	github.com/aws/aws-cdk-go/awscdk/v2 v2.76.0
 	github.com/aws/aws-lambda-go v1.39.1
 	github.com/aws/aws-sdk-go-v2 v1.17.7
 	github.com/aws/aws-sdk-go-v2/config v1.18.19
@@ -11,6 +12,7 @@ require (
 )
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.18 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.31 // indirect
@@ -20,6 +22,11 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.12.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.7 // indirect
+	github.com/aws/constructs-go/constructs/v10 v10.1.270 // indirect
+	github.com/aws/jsii-runtime-go v1.78.1 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+	github.com/cdklabs/awscdk-asset-awscli-go/awscliv1/v2 v2.2.97 // indirect
+	github.com/cdklabs/awscdk-asset-kubectl-go/kubectlv20/v2 v2.1.1 // indirect
+	github.com/cdklabs/awscdk-asset-node-proxy-agent-go/nodeproxyagentv5/v2 v2.0.77 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 )
