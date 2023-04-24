@@ -53,6 +53,21 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 		EventBusName: jsii.String("HealthEventBus"),
 	})
 
+	busRuleStatement := awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+		Effect:     awsiam.Effect_ALLOW,
+		Principals: &[]awsiam.IPrincipal{awsiam.NewAnyPrincipal()},
+		Actions:    &[]*string{jsii.String("events:PutEvents")},
+		Resources:  &[]*string{jsii.String(*healthEventBus.EventBusArn())},
+		Sid:        jsii.String("HealthEventBusPolicy"),
+		//		Conditions: map[string]interface{}{
+		//			"StringLike": map[string]string{
+		//				"aws:SourceArn": "HealthEventBus",
+		//			},
+		//		},
+	})
+
+	healthEventBus.AddToResourcePolicy(busRuleStatement)
+
 	healthEventRule := awsevents.NewRule(stack, jsii.String("HealthEventRule"), &awsevents.RuleProps{
 		Description:  jsii.String("Health Event Notification Rule"),
 		EventPattern: &awsevents.EventPattern{DetailType: &[]*string{jsii.String("AWS Health Event"), jsii.String("CUSTOM")}, Source: &[]*string{jsii.String("aws.health"), jsii.String("custom.dingtalkevent.test")}},
