@@ -1,0 +1,10 @@
+POST https://oapi.dingtalk.com/robot/send?access_token=7d33bacc76fbeb45fd7f9ade6f096d136a91d98230d941c4a84eac7e825c7a5b HTTP/1.1
+Content-Type:application/json
+
+    {
+        "msgtype": "text",
+        "text":
+            {
+                "content":"ZZHE我就是我, 是不一样的烟火"
+            }
+    }
