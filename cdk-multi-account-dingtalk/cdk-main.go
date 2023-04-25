@@ -183,8 +183,16 @@ func main() {
 }
 
 func env() *awscdk.Environment {
+	account := os.Getenv("CDK_DEPLOY_ACCOUNT")
+	region := os.Getenv("CDK_DEPLOY_REGION")
+
+	if len(account) == 0 || len(region) == 0 {
+		account = os.Getenv("CDK_DEFAULT_ACCOUNT")
+		region = os.Getenv("CDK_DEFAULT_REGION")
+	}
+
 	return &awscdk.Environment{
-		Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
-		Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
+		Account: jsii.String(account),
+		Region:  jsii.String(region),
 	}
 }
