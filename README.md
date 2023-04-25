@@ -1,21 +1,33 @@
-# 推送AWS服务健康及维护信息到阿里钉钉自定义机器人
+# 推送AWS服务健康及维护信息(Health Event)到企业通信工具消息机器人（IM robot）
 
 ---
 
-### 背景信息
 
-AWS通过Health Dashboard及Health API实时把AWS服务的健康事件，指定服务的维护事件及事件反馈给用户。本方案通过AWS Serverless服务把相关事件推送到阿里钉钉机器人实现实时消息接入。
+## 背景信息
+AWS通过Health Dashboard及Health API实时把AWS服务的健康事件，指定服务的维护事件及事件反馈给用户。本方案通过AWS Serverless服务把相关事件推送到企业通信工具机器人（IM robot）实现实时消息接入。
 
-### 架构图
-方案参考架构图如下：
-![钉钉机器人推送架构](dingtalk/picture/dingtalk-event-bot.png)
+方案支持单地区部署和基于AWS Organization management account权限的多账号版本。当使用AWS账号及地区较少时，可使用单地区部署版本，仅在需要的账号及地区分别部署。
+
+如果AWS环境使用很多的账号及地区，可使用多账号版本。多账号版本基于AWS Organization management account权限，使用Cloudformation Stackset完成多账号多地区自动部署。
+
+
+## 阿里钉钉机器人版本 (Dingtalk)
 
 ### 消息样式
 lambda采取markdown格式输出到钉钉机器人，消息样式如下：
-![消息样式](dingtalk/picture/dingtalk-bot-healthevent-format.jpeg)
+![消息样式](docs/picture/healthevent-format-bot-dingtalk.jpeg)
+### 单账号版本架构图
+单账号版本参考架构图如下：
+![单账号钉钉机器人推送架构](docs/picture/single-account-event-bot-dingtalk.png)
+
+### 多账号版本架构图
+![多账号钉钉机器人推送架构](docs/picture/multi-account-event-bot-dingtalk.png)
+
 
 ### 部署及配置方式
-本方案采用AWS无服务架构，并且通过AWS Serverless Application Module（SAM）方式部署。
+单账号版本支持Serverless Application Module(SAM)和Cloud Development Kit(CDK)方式部署。
+#### SAM部署方式
+单账号版本通过AWS Serverless Application Module（SAM）方式部署。
 
 每个lambda应用（[lambda application](https://docs.aws.amazon.com/lambda/latest/dg/deploying-lambda-apps.html)）对应一个机器人部署，包含一个EventBridge rule, 一个SNS topic，一个lambda函数以及SecretManager中的一个Secret（架构图中的绿色部分）。
 
@@ -58,7 +70,6 @@ WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_
 
 如果需要部署多个机器人负责推送不同类型的消息给对应的成员，例如（DBA消息机器人、安全消息机器人、指定业务消息机器人）,建议分别为每个机器人创建目录，并且分别把SAM模版及lambda代码放置在相关代码路径中以保证配置的独立性。
 
-由于Health API默认的Endpoint是在us-east-1地区，不考虑高可用的场景下，本应用**必须**部署在us-east-1地区。
 
 6. 修改配置（可选）
 
