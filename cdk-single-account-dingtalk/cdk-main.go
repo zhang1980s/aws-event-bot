@@ -44,26 +44,26 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	//Resources:
 
-	dingTalkEventTopic := awssns.NewTopic(stack, jsii.String("DingTalkEventTopic"), &awssns.TopicProps{
-		DisplayName: jsii.String("DingTalkEventTopic"),
+	dingTalkEventTopic := awssns.NewTopic(stack, jsii.String("SingleAccountDingTalkEventTopic"), &awssns.TopicProps{
+		DisplayName: jsii.String("SingleAccountDingTalkEventTopic"),
 	})
 
-	healthEventRule := awsevents.NewRule(stack, jsii.String("HealthEventRule"), &awsevents.RuleProps{
-		Description:  jsii.String("Health Event Notification Rule"),
-		EventPattern: &awsevents.EventPattern{DetailType: &[]*string{jsii.String("AWS Health Event")}, Source: &[]*string{jsii.String("aws.health")}},
+	healthEventRule := awsevents.NewRule(stack, jsii.String("SingleAccountHealthEventRule"), &awsevents.RuleProps{
+		Description:  jsii.String("Single Account Health Event Notification Rule"),
+		EventPattern: &awsevents.EventPattern{DetailType: &[]*string{jsii.String("AWS Health Event"), jsii.String("CUSTOM")}, Source: &[]*string{jsii.String("aws.health"), jsii.String("custom.dingtalkevent.test")}},
 		Enabled:      jsii.Bool(true),
 	})
 
 	// Secret Manager Secret to store the webhook endpoint
 
-	dingTalkCustomBotSecret := awssecretsmanager.NewSecret(stack, jsii.String("DingTalkCustomBotSecret"), &awssecretsmanager.SecretProps{
-		Description:       jsii.String("Secret to store the endpoint"),
+	dingTalkCustomBotSecret := awssecretsmanager.NewSecret(stack, jsii.String("SingleAccountDingTalkCustomBotSecret"), &awssecretsmanager.SecretProps{
+		Description:       jsii.String("Single Account Secret to store the endpoint"),
 		SecretStringValue: awscdk.SecretValue_CfnParameter(webHook),
 	})
 
 	// DingTalk CustomBot Lambda
 
-	dingTalkCustomBotHandler := awslambda.NewFunction(stack, jsii.String("DingTalkCustomBotHandler"), &awslambda.FunctionProps{
+	dingTalkCustomBotHandler := awslambda.NewFunction(stack, jsii.String("SingleAccountDingTalkCustomBotHandler"), &awslambda.FunctionProps{
 		Code:       awslambda.Code_FromAsset(jsii.String("eventHandler"), nil),
 		Handler:    jsii.String("bin/main"),
 		Runtime:    awslambda.Runtime_GO_1_X(),
@@ -100,7 +100,7 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 func main() {
 	app := awscdk.NewApp(nil)
 
-	NewDingTalkEventBotStack(app, "DintTalkEventBotStack", &DingTalkEventBotStackProps{
+	NewDingTalkEventBotStack(app, "SingleAccountDingTalkEventBotStack", &DingTalkEventBotStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},
@@ -110,8 +110,16 @@ func main() {
 }
 
 func env() *awscdk.Environment {
+	account := os.Getenv("CDK_DEPLOY_ACCOUNT")
+	region := os.Getenv("CDK_DEPLOY_REGION")
+
+	if len(account) == 0 || len(region) == 0 {
+		account = os.Getenv("CDK_DEFAULT_ACCOUNT")
+		region = os.Getenv("CDK_DEFAULT_REGION")
+	}
+
 	return &awscdk.Environment{
-		Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
-		Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
+		Account: jsii.String(account),
+		Region:  jsii.String(region),
 	}
 }
