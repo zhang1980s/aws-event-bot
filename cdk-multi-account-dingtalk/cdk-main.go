@@ -151,7 +151,9 @@ Resources:
             Resource:
             - "EVENTBUSARN"`
 
-	awscdk.NewCfnStackSet(stack, jsii.String("HealthEventRuleStackSet"), &awscdk.CfnStackSetProps{
+	stackSetGroupName := stack.Node().TryGetContext(jsii.String("groupName")).(string)
+
+	awscdk.NewCfnStackSet(stack, jsii.String("HealthEventRuleStackSet-"+stackSetGroupName), &awscdk.CfnStackSetProps{
 		PermissionModel: jsii.String("SERVICE_MANAGED"),
 		StackSetName:    jsii.String("HealthEventRuleStackSet"),
 		AutoDeployment: &awscdk.CfnStackSet_AutoDeploymentProperty{
@@ -173,7 +175,9 @@ Resources:
 func main() {
 	app := awscdk.NewApp(nil)
 
-	NewDingTalkEventBotStack(app, "DingTalkEventBotStack", &DingTalkEventBotStackProps{
+	groupName := app.Node().TryGetContext(jsii.String("groupName")).(string)
+
+	NewDingTalkEventBotStack(app, "DingTalkEventBotStack-"+groupName, &DingTalkEventBotStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},
