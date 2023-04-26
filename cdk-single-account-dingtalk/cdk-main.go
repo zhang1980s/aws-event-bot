@@ -100,7 +100,9 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 func main() {
 	app := awscdk.NewApp(nil)
 
-	NewDingTalkEventBotStack(app, "SingleAccountDingTalkEventBotStack", &DingTalkEventBotStackProps{
+	groupName := app.Node().TryGetContext(jsii.String("groupName")).(string)
+
+	NewDingTalkEventBotStack(app, "SingleAccountDingTalkEventBotStack-"+groupName, &DingTalkEventBotStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},
