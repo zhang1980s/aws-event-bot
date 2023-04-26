@@ -53,6 +53,9 @@ git clone https://github.com/zhang1980s/aws-event-bot.git
 ```
 
 4. 部署单账号版本机器人后端架构 
+
+由于钉钉自定义机器人和钉钉群是一一对应关系，如果同region中有多个钉钉机器人，可使用groupName参数指定群组名称，并在创建stack的时候用 --context参数传入部署。部署完毕后，每个Cloudformation stack会用groupName参数区分stack名称。由于stack名称不支持中文，因此groupName名称必须使用英文名称。
+
 ```
 cd cdk-single-account-dingtalk
 ./cdk-deploy-to.sh <ACCOUNT-NUMBER> <REGION> deploy --parameters "WebHook=https://oapi.dingtalk.com/robot/send?access_token=<xxx>" --parameters "BotSecretKey=<xxx>" --context groupName=<dingtalk-group-name>
@@ -78,6 +81,13 @@ aws events put-events --region <REGION> --entries '[{"Source":"custom.dingtalkev
 ```
 
 输入上述命令后，钉钉机器人会打印KAFKA维护信息到所在的群组中。
+
+6. 删除机器人
+在cdk-single-account-dingtalk目录中，执行下面命令删除相关机器人stack。
+
+```
+./cdk-deploy-to.sh <ACCOUNT-NUMBER> <REGION> destroy --context groupName=<dingtalk-group-name>
+```
 
 #### SAM部署方式
 单账号版本可通过AWS Serverless Application Module（SAM）方式部署。
