@@ -73,7 +73,7 @@ cdk bootstrap aws://ACCOUNT-NUMBER/REGION
 aws sns publish --region <REGION> --topic-arn <SNS ARN> --message '{"version":"0","id":"99999999-9999-9999-9990-999999999999","detail-type":"AWS Health Event","source":"aws.health","account":"123456789012","time":"2016-06-05T06:27:57Z","region":"ap-southeast-2","resources":[],"detail":{"arn":"arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999","service":"KAFKA","eventTypeCode":"AWS_KAFKA_SECURITY_PATCHING_EVENT","eventTypeCategory":"scheduledChange","region":"us-west-2","startTime":"2023-03-09T23:00:00+08:00","endTime":"2023-03-10T03:00:00+08:00","lastUpdatedTime":"2023-03-02T23:02:12.808000+08:00","statusCode":"closed","eventScopeCode":"ACCOUNT_SPECIFIC"}}'
 ```
 
-SNS ARN 可以从cdk部署完成输出中的<STACKNAME>.SNSARN参数中获得。
+SNS ARN 可以从cdk部署完成输出中的STACKNAME.SNSARN参数中获得。
 
 
 **EventBus消息测试**
@@ -174,13 +174,16 @@ cdk bootstrap aws://ACCOUNT-NUMBER/REGION
 6. 测试机器人
 
 **SNS消息测试**
+使用管理账号权限测试。
+
 ```
 aws sns publish --region <REGION> --topic-arn <SNS ARN> --message '{"version":"0","id":"99999999-9999-9999-9990-999999999999","detail-type":"AWS Health Event","source":"aws.health","account":"123456789012","time":"2016-06-05T06:27:57Z","region":"ap-southeast-2","resources":[],"detail":{"arn":"arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999","service":"KAFKA","eventTypeCode":"AWS_KAFKA_SECURITY_PATCHING_EVENT","eventTypeCategory":"scheduledChange","region":"us-west-2","startTime":"2023-03-09T23:00:00+08:00","endTime":"2023-03-10T03:00:00+08:00","lastUpdatedTime":"2023-03-02T23:02:12.808000+08:00","statusCode":"closed","eventScopeCode":"ACCOUNT_SPECIFIC"}}'
 ```
 
-SNS ARN 可以从cdk部署完成输出中的<STACKNAME>.SNSARN参数中获得。
+SNS ARN 可以从cdk部署完成输出中的STACKNAME.SNSARN参数中获得。
 
 **EventBus消息测试**
+
 登陆已经部署EventBridge Rule的账号及Region，通过Cloud Shell 执行下面命令。
 
 ```
