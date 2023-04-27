@@ -57,7 +57,7 @@ git clone https://github.com/zhang1980s/aws-event-bot.git
 由于钉钉自定义机器人和钉钉群是一一对应关系，如果同region中有多个钉钉机器人，可使用groupName参数指定群组名称，并在创建stack的时候用 --context参数传入部署。部署完毕后，每个Cloudformation stack会用groupName参数区分stack名称。由于stack名称不支持中文，因此groupName名称必须使用英文名称。
 
 ```
-cd cdk-single-account-dingtalk
+cd single-account-dingtalk
 ./cdk-deploy-to.sh <ACCOUNT-NUMBER> <REGION> deploy --parameters "WebHook=https://oapi.dingtalk.com/robot/send?access_token=<xxx>" --parameters "BotSecretKey=<xxx>" --context groupName=<dingtalk-group-name>
 ```
 
@@ -83,7 +83,7 @@ aws events put-events --region <REGION> --entries '[{"Source":"custom.dingtalkev
 输入上述命令后，钉钉机器人会打印KAFKA维护信息到所在的群组中。
 
 6. 删除机器人
-在cdk-single-account-dingtalk目录中，执行下面命令删除相关机器人stack。
+在single-account-dingtalk目录中，执行下面命令删除相关机器人stack。
 
 ```
 ./cdk-deploy-to.sh <ACCOUNT-NUMBER> <REGION> destroy --context groupName=<dingtalk-group-name>
@@ -133,10 +133,67 @@ WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_
 ### 多账号版本机器人后端架构图
 ![多账号钉钉机器人推送架构](docs/picture/multi-account-event-bot-dingtalk.png)
 
+#### 多账号版本机器人后端架构部署方式
+多账号版本支持Cloud Development Kit(CDK)方式部署。
 
-### 部署及配置方式
 
+1. 安装CDK 环境
+参考文档：[Installing the AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
 
+2. 安装Golang环境
+lambda代码采用golang开发，因此部署环境需要有golang编译环境。
+lambda开发环境： go1.18.3 ,相对新的go版本都可以支持。
+
+参考文档：[Download and install Golang](https://go.dev/doc/install)
+
+3. 下载代码
+从github上下载代码：
+
+```
+git clone https://github.com/zhang1980s/aws-event-bot.git
+```
+
+4. 部署多账号版本机器人后端架构 
+
+由于钉钉自定义机器人和钉钉群是一一对应关系，如果同region中有多个钉钉机器人，可使用groupName参数指定群组名称，并在创建stack的时候用 --context参数传入部署。部署完毕后，每个Cloudformation stack会用groupName参数区分stack名称。由于stack名称不支持中文，因此groupName名称必须使用英文名称。
+
+```
+cd multi-account-dingtalk
+./cdk-deploy-to.sh <ACCOUNT-NUMBER> <REGION> deploy --parameters "WebHook=https://oapi.dingtalk.com/robot/send?access_token=<xxx>" --parameters "BotSecretKey=<xxx>" --context groupName=<dingtalk-group-name>
+```
+
+如果目标账号的目标Region没有cdk[初始环境](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html)，部署前需执行下面命令进行CDK初始化。
+
+```
+cdk bootstrap aws://ACCOUNT-NUMBER/REGION
+```
+5. 通过StackSet界面指定多账号多Region部署
+<详情待续>
+
+6. 测试机器人
+
+**SNS消息测试**
+```
+aws sns publish --region <REGION> --topic-arn <SNS ARN> --message '{"version":"0","id":"99999999-9999-9999-9990-999999999999","detail-type":"AWS Health Event","source":"aws.health","account":"123456789012","time":"2016-06-05T06:27:57Z","region":"ap-southeast-2","resources":[],"detail":{"arn":"arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999","service":"KAFKA","eventTypeCode":"AWS_KAFKA_SECURITY_PATCHING_EVENT","eventTypeCategory":"scheduledChange","region":"us-west-2","startTime":"2023-03-09T23:00:00+08:00","endTime":"2023-03-10T03:00:00+08:00","lastUpdatedTime":"2023-03-02T23:02:12.808000+08:00","statusCode":"closed","eventScopeCode":"ACCOUNT_SPECIFIC"}}'
+```
+
+SNS ARN 可以从cdk部署完成输出中的<STACKNAME>.SNSARN参数中获得。
+
+**EventBus消息测试**
+登陆已经部署EventBridge Rule的账号及Region，通过Cloud Shell 执行下面命令。
+
+```
+aws events put-events --region <REGION> --entries '[{"Source":"custom.dingtalkevent.test","DetailType":"CUSTOM","Detail":"{\"arn\": \"arn:aws:health:us-west-2::event/KAFKA/AWS_KAFKA_SECURITY_PATCHING_EVENT/AWS_KAFKA_SECURITY_PATCHING_EVENT_99999999-9999-9999-9999-999999999999\", \"service\": \"KAFKA\", \"eventTypeCode\": \"AWS_KAFKA_SECURITY_PATCHING_EVENT\", \"eventTypeCategory\": \"scheduledChange\", \"region\": \"us-west-2\", \"startTime\": \"2023-03-09T23:00:00+08:00\", \"endTime\": \"2023-03-10T03:00:00+08:00\", \"lastUpdatedTime\": \"2023-03-02T23:02:12.808000+08:00\", \"statusCode\": \"closed\", \"eventScopeCode\": \"ACCOUNT_SPECIFIC\"}","EventBusName":"default"}]' 
+```
+
+输入上述命令后，钉钉机器人会打印KAFKA维护信息到所在的群组中。
+
+6. 删除机器人
+在single-account-dingtalk目录中，执行下面命令删除相关机器人stack。
+
+```
+./cdk-deploy-to.sh <ACCOUNT-NUMBER> <REGION> destroy --context groupName=<dingtalk-group-name>
+```
 
 
 
@@ -153,7 +210,7 @@ WebHook地址会被写入到SecretManager中做保存。Lambda会通过 WEBHOOK_
 
 ### 修改通知事件类型配置（可选）
 
-设置机器人只接受特定类型的事件，需要通过定制EventBridge rule中的EventPattern来实现。修改位置在template.yml文件中的下面段落：
+设置机器人只接受特定类型的事件，需要通过定制EventBridge rule中的EventPattern来实现。
 
 ```
       EventPattern: {"detail-type": ["AWS Health Event"],"source": ["aws.health"]}
