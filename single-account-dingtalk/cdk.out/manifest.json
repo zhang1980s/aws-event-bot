@@ -1,0 +1,136 @@
+{
+  "version": "31.0.0",
+  "artifacts": {
+    "EventBotStack-SAD-aws-event-bot-1.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "EventBotStack-SAD-aws-event-bot-1.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "EventBotStack-SAD-aws-event-bot-1": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://894855526703/us-east-1",
+      "properties": {
+        "templateFile": "EventBotStack-SAD-aws-event-bot-1.template.json",
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::894855526703:role/cdk-hnb659fds-deploy-role-894855526703-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::894855526703:role/cdk-hnb659fds-cfn-exec-role-894855526703-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-894855526703-us-east-1/68733cd2eeded19167060f5181f3f11e8e1b7c82b6f1b3fa4244b26ad723aed3.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "EventBotStack-SAD-aws-event-bot-1.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::894855526703:role/cdk-hnb659fds-lookup-role-894855526703-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "EventBotStack-SAD-aws-event-bot-1.assets"
+      ],
+      "metadata": {
+        "/EventBotStack-SAD-aws-event-bot-1/WebHook": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WebHook"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BotSecretKey": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BotSecretKey"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/EventTopicSAD/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EventTopicSAD63AAF9ED"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/EventTopicSAD/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EventTopicSADPolicy50FE592E"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/EventRuleSAD/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EventRuleSADD2300DDD"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BotSecretSAD/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BotSecretSAD060FCEBE"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BotHandlerSAD/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BotHandlerSADServiceRole312AC76D"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BotHandlerSAD/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BotHandlerSADServiceRoleDefaultPolicyE6F2A819"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BotHandlerSAD/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BotHandlerSAD4D9A081D"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BotHandlerSAD/AllowInvoke:EventBotStackSADawseventbot1EventTopicSAD54AE481B": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BotHandlerSADAllowInvokeEventBotStackSADawseventbot1EventTopicSAD54AE481B7E615B87"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BotHandlerSAD/EventTopicSAD/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BotHandlerSADEventTopicSAD2B2BF922"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/SNSARN": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SNSARN"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/EventBotStack-SAD-aws-event-bot-1/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "EventBotStack-SAD-aws-event-bot-1"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,357 @@
+{
+ "Parameters": {
+  "WebHook": {
+   "Type": "String",
+   "Description": "The DingTalk CustomBot Webhook Endpoint",
+   "NoEcho": true
+  },
+  "BotSecretKey": {
+   "Type": "String",
+   "Default": "AWS",
+   "Description": "The SecreKey of DingTalk CustomBot"
+  },
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Resources": {
+  "DingTalkEventTopicawseventbot25846DF09": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "DisplayName": "DingTalkEventTopicaws-event-bot-2"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/DingTalkEventTopicaws-event-bot-2/Resource"
+   }
+  },
+  "DingTalkEventTopicawseventbot2Policy24416EBC": {
+   "Type": "AWS::SNS::TopicPolicy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sns:Publish",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "events.amazonaws.com"
+       },
+       "Resource": {
+        "Ref": "DingTalkEventTopicawseventbot25846DF09"
+       },
+       "Sid": "0"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Topics": [
+     {
+      "Ref": "DingTalkEventTopicawseventbot25846DF09"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/DingTalkEventTopicaws-event-bot-2/Policy/Resource"
+   }
+  },
+  "HealthEventBusawseventbot2C6FDF660": {
+   "Type": "AWS::Events::EventBus",
+   "Properties": {
+    "Name": "HealthEventBusaws-event-bot-2"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/HealthEventBusaws-event-bot-2/Resource"
+   }
+  },
+  "HealthEventBusawseventbot2Policy5149CB80": {
+   "Type": "AWS::Events::EventBusPolicy",
+   "Properties": {
+    "StatementId": "HealthEventBusPolicy-aws-event-bot-2",
+    "EventBusName": {
+     "Ref": "HealthEventBusawseventbot2C6FDF660"
+    },
+    "Statement": {
+     "Action": "events:PutEvents",
+     "Effect": "Allow",
+     "Principal": {
+      "AWS": "*"
+     },
+     "Resource": {
+      "Fn::GetAtt": [
+       "HealthEventBusawseventbot2C6FDF660",
+       "Arn"
+      ]
+     },
+     "Sid": "HealthEventBusPolicy-aws-event-bot-2"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/HealthEventBusaws-event-bot-2/Policy/Resource"
+   }
+  },
+  "HealthEventRuleawseventbot2C810C97D": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "Description": "Health Event Notification Rule",
+    "EventBusName": {
+     "Ref": "HealthEventBusawseventbot2C6FDF660"
+    },
+    "EventPattern": {
+     "detail-type": [
+      "AWS Health Event",
+      "CUSTOM"
+     ],
+     "source": [
+      "aws.health",
+      "custom.dingtalkevent.test"
+     ]
+    },
+    "State": "ENABLED",
+    "Targets": [
+     {
+      "Arn": {
+       "Ref": "DingTalkEventTopicawseventbot25846DF09"
+      },
+      "Id": "Target0"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/HealthEventRuleaws-event-bot-2/Resource"
+   }
+  },
+  "BotSecretawseventbot2177AB8B0": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "Secret to store the endpoint",
+    "SecretString": {
+     "Ref": "WebHook"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/BotSecretaws-event-bot-2/Resource"
+   }
+  },
+  "BotHandlerawseventbot2ServiceRoleD3541941": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/BotHandleraws-event-bot-2/ServiceRole/Resource"
+   }
+  },
+  "BotHandlerawseventbot2ServiceRoleDefaultPolicy80DA5FCE": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "secretsmanager:GetSecretValue",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "BotSecretawseventbot2177AB8B0"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "BotHandlerawseventbot2ServiceRoleDefaultPolicy80DA5FCE",
+    "Roles": [
+     {
+      "Ref": "BotHandlerawseventbot2ServiceRoleD3541941"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/BotHandleraws-event-bot-2/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "BotHandlerawseventbot2335F8EDD": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-894855526703-us-east-1",
+     "S3Key": "793d745da8c325e3084c257f47ede592a571711e8547cd38fcb9fc61b8f1aa51.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "BotHandlerawseventbot2ServiceRoleD3541941",
+      "Arn"
+     ]
+    },
+    "Environment": {
+     "Variables": {
+      "BOT_SECRET_KEY": {
+       "Ref": "BotSecretKey"
+      },
+      "WEBHOOK_SECRET_ARN": {
+       "Ref": "BotSecretawseventbot2177AB8B0"
+      }
+     }
+    },
+    "Handler": "bin/main",
+    "MemorySize": 128,
+    "Runtime": "go1.x",
+    "Timeout": 10
+   },
+   "DependsOn": [
+    "BotHandlerawseventbot2ServiceRoleDefaultPolicy80DA5FCE",
+    "BotHandlerawseventbot2ServiceRoleD3541941"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/BotHandleraws-event-bot-2/Resource",
+    "aws:asset:path": "asset.793d745da8c325e3084c257f47ede592a571711e8547cd38fcb9fc61b8f1aa51",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "BotHandlerawseventbot2AllowInvokeDingTalkEventBotStackawseventbot2DingTalkEventTopicawseventbot2958B27E8010878E3": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "BotHandlerawseventbot2335F8EDD",
+      "Arn"
+     ]
+    },
+    "Principal": "sns.amazonaws.com",
+    "SourceArn": {
+     "Ref": "DingTalkEventTopicawseventbot25846DF09"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/BotHandleraws-event-bot-2/AllowInvoke:DingTalkEventBotStackawseventbot2DingTalkEventTopicawseventbot2958B27E8"
+   }
+  },
+  "BotHandlerawseventbot2DingTalkEventTopicawseventbot244013C2B": {
+   "Type": "AWS::SNS::Subscription",
+   "Properties": {
+    "Protocol": "lambda",
+    "TopicArn": {
+     "Ref": "DingTalkEventTopicawseventbot25846DF09"
+    },
+    "Endpoint": {
+     "Fn::GetAtt": [
+      "BotHandlerawseventbot2335F8EDD",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/BotHandleraws-event-bot-2/DingTalkEventTopicaws-event-bot-2/Resource"
+   }
+  },
+  "HealthEventRuleStackSetawseventbot2": {
+   "Type": "AWS::CloudFormation::StackSet",
+   "Properties": {
+    "PermissionModel": "SERVICE_MANAGED",
+    "StackSetName": "HealthEventRuleStackSet-aws-event-bot-2",
+    "AutoDeployment": {
+     "Enabled": true,
+     "RetainStacksOnAccountRemoval": true
+    },
+    "Capabilities": [
+     "CAPABILITY_NAMED_IAM"
+    ],
+    "TemplateBody": {
+     "Fn::Join": [
+      "",
+      [
+       "---\nAWSTemplateFormatVersion: 2010-09-09\nDescription: EventBridgeRule\nResources:\n  EventBridgeRule:\n    Type: AWS::Events::Rule\n    Properties:\n      Description: Forward event to HealthEventBus\n      EventBusName: default\n      State: ENABLED\n      EventPattern:\n        source:\n        - custom.dingtalkevent.test\n      Targets:\n      - Arn: \"",
+       {
+        "Fn::GetAtt": [
+         "HealthEventBusawseventbot2C6FDF660",
+         "Arn"
+        ]
+       },
+       "\"\n        Id: dingtalk-eventbus-account\n        RoleArn:\n          Fn::GetAtt:\n          - EventBridgeIAMrole\n          - Arn\n  EventBridgeIAMrole:\n    Type: AWS::IAM::Role\n    Properties:\n      AssumeRolePolicyDocument:\n        Version: '2012-10-17'\n        Statement:\n        - Effect: Allow\n          Principal:\n            Service:\n              Fn::Sub: events.amazonaws.com\n          Action: sts:AssumeRole\n      Path: \"/\"\n      Policies:\n      - PolicyName: PutEventsDestinationBus-aws-event-bot-2\n        PolicyDocument:\n          Version: '2012-10-17'\n          Statement:\n          - Effect: Allow\n            Action:\n            - events:PutEvents\n            Resource:\n            - \"",
+       {
+        "Fn::GetAtt": [
+         "HealthEventBusawseventbot2C6FDF660",
+         "Arn"
+        ]
+       },
+       "\""
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/HealthEventRuleStackSet-aws-event-bot-2"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/11QTU/DMAz9LbunGWNocGUIrlQt98nNTOW1Sao44UNV/ztJum4Tl7z3bMvvxffycSfvVvDNhTp2RU+NHGsPqhMvn6YEBxo9OhH7h5ENy/HDDqRScyb5LW1P6vdSPMs6NKwcDZ6sSb1bPQn8QuPjvteE+8Bp4sIXcl38r1KFHlM54SQYlUPPGgy06OIHss6emU2iB90cQY5vwaglzy0v0WlizskItBwrezZIeI0xs+i4PQBz9JTPCaKW+6A69HvgGKhCtsEpFLkb79mSaXOedNp6zvYe/BAyW8Yn0dqN3DzJ7bonE37W4PTuYXViosIF40mjrGb8A7nl4Ba4AQAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "DingTalkEventBotStack-aws-event-bot-2/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "SNSArn": {
+   "Value": {
+    "Ref": "DingTalkEventTopicawseventbot25846DF09"
+   }
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
