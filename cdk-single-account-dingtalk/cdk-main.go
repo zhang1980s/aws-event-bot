@@ -43,12 +43,13 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 	})
 
 	//Resources:
+	// "SAD" = "Single Account DingTalk"
 
-	dingTalkEventTopic := awssns.NewTopic(stack, jsii.String("SingleAccountDingTalkEventTopic"), &awssns.TopicProps{
+	dingTalkEventTopic := awssns.NewTopic(stack, jsii.String("EventTopicSAD"), &awssns.TopicProps{
 		DisplayName: jsii.String("SingleAccountDingTalkEventTopic"),
 	})
 
-	healthEventRule := awsevents.NewRule(stack, jsii.String("SingleAccountHealthEventRule"), &awsevents.RuleProps{
+	healthEventRule := awsevents.NewRule(stack, jsii.String("EventRuleSAD"), &awsevents.RuleProps{
 		Description:  jsii.String("Single Account Health Event Notification Rule"),
 		EventPattern: &awsevents.EventPattern{DetailType: &[]*string{jsii.String("AWS Health Event"), jsii.String("CUSTOM")}, Source: &[]*string{jsii.String("aws.health"), jsii.String("custom.dingtalkevent.test")}},
 		Enabled:      jsii.Bool(true),
@@ -56,14 +57,14 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	// Secret Manager Secret to store the webhook endpoint
 
-	dingTalkCustomBotSecret := awssecretsmanager.NewSecret(stack, jsii.String("SingleAccountDingTalkCustomBotSecret"), &awssecretsmanager.SecretProps{
+	dingTalkCustomBotSecret := awssecretsmanager.NewSecret(stack, jsii.String("BotSecretSAD"), &awssecretsmanager.SecretProps{
 		Description:       jsii.String("Single Account Secret to store the endpoint"),
 		SecretStringValue: awscdk.SecretValue_CfnParameter(webHook),
 	})
 
 	// DingTalk CustomBot Lambda
 
-	dingTalkCustomBotHandler := awslambda.NewFunction(stack, jsii.String("SingleAccountDingTalkCustomBotHandler"), &awslambda.FunctionProps{
+	dingTalkCustomBotHandler := awslambda.NewFunction(stack, jsii.String("BotHandlerSAD"), &awslambda.FunctionProps{
 		Code:       awslambda.Code_FromAsset(jsii.String("eventHandler"), nil),
 		Handler:    jsii.String("bin/main"),
 		Runtime:    awslambda.Runtime_GO_1_X(),
@@ -89,7 +90,7 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	// Output SNS ARN for test propose
 
-	awscdk.NewCfnOutput(stack, jsii.String("SNSArn"), &awscdk.CfnOutputProps{
+	awscdk.NewCfnOutput(stack, jsii.String("SNSARN"), &awscdk.CfnOutputProps{
 		Value: dingTalkEventTopic.TopicArn(),
 	})
 
@@ -102,7 +103,7 @@ func main() {
 
 	groupName := app.Node().TryGetContext(jsii.String("groupName")).(string)
 
-	NewDingTalkEventBotStack(app, "SingleAccountDingTalkEventBotStack-"+groupName, &DingTalkEventBotStackProps{
+	NewDingTalkEventBotStack(app, "EventBotStack-SAD-"+groupName, &DingTalkEventBotStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},
