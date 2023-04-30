@@ -56,6 +56,43 @@ type HealthEvent struct {
 	} `json:"detail,omitempty"`
 }
 
+func formatMarkdown(healthevent HealthEvent) string {
+	var buffer strings.Builder
+
+	buffer.WriteString("#AWS 健康事件通知\n")
+	buffer.WriteString("---\n")
+	buffer.WriteString("#### **事件类型:**\t")
+	buffer.WriteString(healthevent.DetailType)
+	buffer.WriteString("\n#### **账号:**\t")
+	buffer.WriteString(healthevent.Account)
+	buffer.WriteString("\n#### **时间:**\t")
+	buffer.WriteString(healthevent.Time)
+	buffer.WriteString("\n#### **地区:**\t")
+	buffer.WriteString(healthevent.Region)
+	buffer.WriteString("\n#### **资源:**\t")
+	buffer.WriteString(strings.Join(healthevent.Resources, ","))
+	buffer.WriteString("\n#### **ARN:**\t")
+	buffer.WriteString(healthevent.Detail.Arn)
+	buffer.WriteString("\n##### **具体服务:**\t")
+	buffer.WriteString(healthevent.Detail.Service)
+	buffer.WriteString("\n##### **具体事件类型码:**\t")
+	buffer.WriteString(healthevent.Detail.EventTypeCode)
+	buffer.WriteString("\n##### **具体地区:**\t")
+	buffer.WriteString(healthevent.Detail.Region)
+	buffer.WriteString("\n##### **开始时间:**\t")
+	buffer.WriteString(healthevent.Detail.StartTime)
+	buffer.WriteString("\n##### **结束时间:**\t")
+	buffer.WriteString(healthevent.Detail.EndTime)
+	buffer.WriteString("\n##### **最后更新时间:**\t")
+	buffer.WriteString(healthevent.Detail.LastUpdatedTime)
+	buffer.WriteString("\n##### **事件状态码:**\t")
+	buffer.WriteString(healthevent.Detail.StatusCode)
+	buffer.WriteString("\n##### **事件范围码:**\t")
+	buffer.WriteString(healthevent.Detail.EventScopeCode)
+
+	return buffer.String()
+}
+
 func GetSecretValue(ctx context.Context) (string, string, error) {
 
 	secretKey := os.Getenv("BOT_SECRET_KEY")
@@ -114,13 +151,12 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 
 	secretValue, secretKey, _ := GetSecretValue(ctx)
 
-	resourcelist := strings.Join(healthevent.Resources, ",")
-
+	markdownText := formatMarkdown(healthevent)
 	req := OapiRobotSendRequest{
 		MsgType: "markdown",
 		Markdown: Markdown{
 			Title: "机器人事件:" + secretKey,
-			Text:  "# AWS 健康事件通知\n --- \n\n#### **事件类型:**\t" + healthevent.DetailType + "\n#### **账号:**\t" + healthevent.Account + "\n#### **时间:**\t" + healthevent.Time + "\n#### **地区:**\t" + healthevent.Region + "\n#### **资源:**\t" + resourcelist + "\n#### **ARN:**\t" + healthevent.Detail.Arn + "\n##### **具体服务:**\t" + healthevent.Detail.Service + "\n##### **具体事件类型码:**\t" + healthevent.Detail.EventTypeCode + "\n##### **具体地区:**\t" + healthevent.Detail.Region + "\n##### **开始时间:**\t" + healthevent.Detail.StartTime + "\n##### **结束时间:**\t" + healthevent.Detail.EndTime + "\n##### **最后更新时间:**\t" + healthevent.Detail.LastUpdatedTime + "\n##### **事件状态码:**\t" + healthevent.Detail.StatusCode + "\n##### **事件范围码:**\t" + healthevent.Detail.EventScopeCode,
+			Text:  markdownText,
 		},
 	}
 
