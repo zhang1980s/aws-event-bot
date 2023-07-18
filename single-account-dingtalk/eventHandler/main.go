@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,6 +27,13 @@ type Markdown struct {
 type OapiRobotSendRequest struct {
 	MsgType  string   `json:"msgtype"`
 	Markdown Markdown `json:"markdown,omitempty"`
+	At       At       `json:"at,omitempty"`
+}
+
+type At struct {
+	AtMobiles []string `json:"atMobiles,omitempty"`
+	AtUserIds []string `json:"atUserIds,omitempty"`
+	IsAtAll   bool     `json:"isAtAll,omitempty"`
 }
 
 type OapiRobotSendResponse struct {
@@ -93,6 +101,44 @@ func formatMarkdown(healthevent HealthEvent) string {
 	return buffer.String()
 }
 
+func GetSSMParameter(ctx context.Context, parameterName string) ([]string, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+
+	if err != nil {
+		logrus.Errorf("failed to load AWS config: %s", err)
+	}
+
+	svc := ssm.NewFromConfig(cfg)
+
+	input := &ssm.GetParametersInput{
+		Names: []string{parameterName},
+	}
+
+	value, err := svc.GetParameters(ctx, input)
+
+	if err != nil {
+		logrus.Errorf("failed to get parameter: %s", err)
+		return nil, err
+	}
+
+	var atList []string
+
+	for _, param := range value.Parameters {
+		atList = append(atList, *param.Value)
+	}
+
+	return atList, nil
+}
+
+func GetSSMPrefix(ctx context.Context) (string, error) {
+	ssmPrefix := os.Getenv("SSM_PREFIX")
+
+	if ssmPrefix == "" {
+		logrus.Errorf("SSM prifix is not set in environment variable: SSM_PRIFIX")
+	}
+	return ssmPrefix, nil
+}
+
 func GetSecretValue(ctx context.Context) (string, string, error) {
 
 	secretKey := os.Getenv("BOT_SECRET_KEY")
@@ -109,7 +155,7 @@ func GetSecretValue(ctx context.Context) (string, string, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 
 	if err != nil {
-		logrus.Errorf("failed to load AWS config: %w", err)
+		logrus.Errorf("failed to load AWS config: %s", err)
 	}
 
 	svc := secretsmanager.NewFromConfig(cfg)
@@ -119,7 +165,7 @@ func GetSecretValue(ctx context.Context) (string, string, error) {
 	})
 
 	if err != nil {
-		logrus.Errorf("failed to get secret value: %w", err)
+		logrus.Errorf("failed to get secret value: %s", err)
 	}
 
 	secretValue := aws.ToString(output.SecretString)
@@ -146,10 +192,16 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	err := json.Unmarshal([]byte(snsMsg), &healthevent)
 
 	if err != nil {
-		logrus.Errorf("%w", err)
+		logrus.Errorf("%s", err)
 	}
 
 	secretValue, secretKey, _ := GetSecretValue(ctx)
+
+	paraPrefix, _ := GetSSMPrefix(ctx)
+
+	atParameter := "/" + paraPrefix + "/" + secretKey + "/" + healthevent.Detail.Service
+
+	atList, _ := GetSSMParameter(ctx, atParameter)
 
 	markdownText := formatMarkdown(healthevent)
 	req := OapiRobotSendRequest{
@@ -157,6 +209,10 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 		Markdown: Markdown{
 			Title: "机器人事件:" + secretKey,
 			Text:  markdownText,
+		},
+		At: At{
+			AtUserIds: atList,
+			IsAtAll:   atList == nil,
 		},
 	}
 
@@ -168,6 +224,9 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	//	logrus.Infof("webhook: %s", secretValue)
 
 	httpReq, err := http.NewRequest("POST", secretValue, bytes.NewBuffer(jsonReq))
+
+	logrus.Infof("httpReq: %v", httpReq)
+
 	if err != nil {
 		return fmt.Errorf("error creating HTTP request: %v", err)
 	}

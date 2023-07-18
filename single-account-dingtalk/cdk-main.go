@@ -42,6 +42,12 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 		Default:     jsii.String("AWS"),
 	})
 
+	botParaPrifix := awscdk.NewCfnParameter(stack, jsii.String("BotParaPrifix"), &awscdk.CfnParameterProps{
+		Description: jsii.String("The Prefix of SSM parameter store for DingTalk CustomBot"),
+		Type:        jsii.String("String"),
+		Default:     jsii.String("DingtalkCustomBotParaPrefix"),
+	})
+
 	//Resources:
 	// "SAD" = "Single Account DingTalk"
 
@@ -76,10 +82,18 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	dingTalkCustomBotHandler.AddEnvironment(jsii.String("WEBHOOK_SECRET_ARN"), dingTalkCustomBotSecret.SecretArn(), nil)
 
+	dingTalkCustomBotHandler.AddEnvironment(jsii.String("SSM_PREFIX"), botParaPrifix.ValueAsString(), nil)
+
 	dingTalkCustomBotHandler.AddToRolePolicy(awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
 		Effect:    awsiam.Effect_ALLOW,
 		Actions:   &[]*string{jsii.String("secretsmanager:GetSecretValue")},
 		Resources: &[]*string{dingTalkCustomBotSecret.SecretArn()},
+	}))
+
+	dingTalkCustomBotHandler.AddToRolePolicy(awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+		Effect:    awsiam.Effect_ALLOW,
+		Actions:   &[]*string{jsii.String("ssm:GetParameter")},
+		Resources: &[]*string{jsii.String("arn:aws:ssm:" + *sprops.Env.Region + ":" + *sprops.Env.Account + ":parameter/" + *botParaPrifix.ValueAsString() + "/" + *botSecretKey.ValueAsString() + "/*")},
 	}))
 
 	// Event Bridge Rule to trigger the DingTalk CustomBot Lambda
