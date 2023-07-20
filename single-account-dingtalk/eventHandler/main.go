@@ -33,7 +33,7 @@ type OapiRobotSendRequest struct {
 type At struct {
 	AtMobiles []string `json:"atMobiles,omitempty"`
 	AtUserIds []string `json:"atUserIds,omitempty"`
-	IsAtAll   bool     `json:"isAtAll,omitempty"`
+	IsAtAll   string   `json:"isAtAll,omitempty"`
 }
 
 type OapiRobotSendResponse struct {
@@ -67,9 +67,9 @@ type HealthEvent struct {
 func formatMarkdown(healthevent HealthEvent) string {
 	var buffer strings.Builder
 
-	buffer.WriteString("#AWS 健康事件通知\n")
-	buffer.WriteString("---\n")
-	buffer.WriteString("#### **事件类型:**\t")
+	buffer.WriteString("AWS 健康事件通知\t")
+	buffer.WriteString("\n--------\t")
+	buffer.WriteString("\n#### **事件类型:**\t")
 	buffer.WriteString(healthevent.DetailType)
 	buffer.WriteString("\n#### **账号:**\t")
 	buffer.WriteString(healthevent.Account)
@@ -101,7 +101,7 @@ func formatMarkdown(healthevent HealthEvent) string {
 	return buffer.String()
 }
 
-func GetSSMParameter(ctx context.Context, parameterName string) ([]string, error) {
+func GetSSMParameter(ctx context.Context, parameterName string) (string, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 
 	if err != nil {
@@ -111,23 +111,18 @@ func GetSSMParameter(ctx context.Context, parameterName string) ([]string, error
 	svc := ssm.NewFromConfig(cfg)
 
 	input := &ssm.GetParametersInput{
-		Names: []string{parameterName},
+		Names:          []string{parameterName},
+		WithDecryption: aws.Bool(true),
 	}
 
-	value, err := svc.GetParameters(ctx, input)
+	atMobilesList, err := svc.GetParameters(ctx, input)
 
 	if err != nil {
 		logrus.Errorf("failed to get parameter: %s", err)
-		return nil, err
+		return "", err
 	}
 
-	var atList []string
-
-	for _, param := range value.Parameters {
-		atList = append(atList, *param.Value)
-	}
-
-	return atList, nil
+	return *atMobilesList.Parameters[0].Value, nil
 }
 
 func GetSSMPrefix(ctx context.Context) (string, error) {
@@ -199,20 +194,28 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 
 	paraPrefix, _ := GetSSMPrefix(ctx)
 
-	atParameter := "/" + paraPrefix + "/" + secretKey + "/" + healthevent.Detail.Service
+	atMobilesParameter := "/" + paraPrefix + "/" + secretKey + "/AtMobiles/" + healthevent.Detail.Service
 
-	atList, _ := GetSSMParameter(ctx, atParameter)
+	atMobilesList, _ := GetSSMParameter(ctx, atMobilesParameter)
 
-	markdownText := formatMarkdown(healthevent)
+	isAtAll := "false"
+
+	if len(atMobilesList) == 0 {
+		isAtAll = "true"
+	}
+
+	phoneNumbers := "@" + strings.ReplaceAll(atMobilesList, ",", " @")
+
+	markdownText := formatMarkdown(healthevent) + "\n-------- \n ##### **事件联系人:** \t\n" + phoneNumbers
 	req := OapiRobotSendRequest{
 		MsgType: "markdown",
 		Markdown: Markdown{
-			Title: "机器人事件:" + secretKey,
+			Title: "AWS健康事件通知: 来自" + secretKey + "机器人",
 			Text:  markdownText,
 		},
 		At: At{
-			AtUserIds: atList,
-			IsAtAll:   atList == nil,
+			AtMobiles: strings.Fields(strings.ReplaceAll(atMobilesList, ",", " ")),
+			IsAtAll:   isAtAll,
 		},
 	}
 
@@ -220,8 +223,7 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	if err != nil {
 		return fmt.Errorf("error encoding JSON: %v", err)
 	}
-	//	logrus.Infof("jsonReq: %s", jsonReq)
-	//	logrus.Infof("webhook: %s", secretValue)
+	logrus.Infof("jsonReq: %s", jsonReq)
 
 	httpReq, err := http.NewRequest("POST", secretValue, bytes.NewBuffer(jsonReq))
 

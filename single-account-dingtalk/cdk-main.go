@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awssecretsmanager"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awssns"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awssnssubscriptions"
+
+	//	"github.com/aws/aws-cdk-go/awscdk/v2/awsssm"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
@@ -68,6 +70,15 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 		SecretStringValue: awscdk.SecretValue_CfnParameter(webHook),
 	})
 
+	// Example Parameter in AWS System Manager Parameter store
+
+	//	awsssm.NewStringParameter(stack, jsii.String("Example parameter for DingTalk CustomBot in AWS System Manager Parameter store"), &awsssm.StringParameterProps{
+	//		Description:   jsii.String("Example parameter for DingTalk CustomBot in AWS System Manager Parameter store"),
+	//		ParameterName: jsii.String("/" + *botParaPrifix.ValueAsString() + "/" + *botSecretKey.ValueAsString() + "/AtMobiles/EXAMPLE"),
+	//		Tier:          awsssm.ParameterTier_STANDARD,
+	//		StringValue:   jsii.String("123456789,987654321"),
+	//	})
+
 	// DingTalk CustomBot Lambda
 
 	dingTalkCustomBotHandler := awslambda.NewFunction(stack, jsii.String("BotHandlerSAD"), &awslambda.FunctionProps{
@@ -76,6 +87,10 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 		Runtime:    awslambda.Runtime_GO_1_X(),
 		MemorySize: jsii.Number(128),
 		Timeout:    awscdk.Duration_Seconds(jsii.Number(10)),
+		//		CurrentVersionOptions: &awslambda.VersionOptions{
+		//			RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
+		//			RetryAttempts: jsii.Number(3),
+		//		},
 	})
 
 	dingTalkCustomBotHandler.AddEnvironment(jsii.String("BOT_SECRET_KEY"), botSecretKey.ValueAsString(), nil)
@@ -92,7 +107,7 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 
 	dingTalkCustomBotHandler.AddToRolePolicy(awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
 		Effect:    awsiam.Effect_ALLOW,
-		Actions:   &[]*string{jsii.String("ssm:GetParameter")},
+		Actions:   &[]*string{jsii.String("ssm:GetParameters")},
 		Resources: &[]*string{jsii.String("arn:aws:ssm:" + *sprops.Env.Region + ":" + *sprops.Env.Account + ":parameter/" + *botParaPrifix.ValueAsString() + "/" + *botSecretKey.ValueAsString() + "/*")},
 	}))
 
