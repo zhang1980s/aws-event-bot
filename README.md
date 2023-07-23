@@ -90,7 +90,7 @@ aws events put-events --region <REGION> --entries '[{"Source":"custom.dingtalkev
 ./cdk-deploy-to.sh <ACCOUNT-NUMBER> <REGION> destroy --context groupName=<dingtalk-group-name>
 ```
 
-#### SAM部署方式
+#### SAM部署方式 （已废弃，代码仅支持初始功能）
 单账号版本可通过AWS Serverless Application Module（SAM）方式部署。
 
 每个lambda应用（[lambda application](https://docs.aws.amazon.com/lambda/latest/dg/deploying-lambda-apps.html)）对应一个机器人部署，包含一个EventBridge rule, 一个SNS topic，一个lambda函数以及SecretManager中的一个Secret（架构图中的绿色部分）。
@@ -210,7 +210,40 @@ aws events put-events --region <REGION> --entries '[{"Source":"custom.dingtalkev
 
 
 
+### 通知到达时，根据通知涉及的服务名称选择at的群成员（可选）
+设置机器人根据特定类型的事件（事件信息中“具体服务”项目的内容），指定AT相关群成员。
 
+在lambda部署的账号/region中，通过在AWS Systems Manager Parameter store中创建特定命名方式的参数来定义需要机器人通知的群成员。
+
+1. 在通过CDK部署时，会通过BotParaPrefix指定一个机器人参数前缀。这个参数前缀会用在这个机器人使用的AWS Systems Manager Parameter store参数中的前缀。部署时可不显式指定这个参数，Cloudformation会使用“DingtalkCustomBotParaPrefix”作为默认值
+2. CDK在资源创建完毕后，会把BotParaPrefix参数的值写入到lambda函数的环境变量中。Lambda会通过环境变量内容在AWS Systems Manager Parameter store的参数中找到相关服务对应的需要通知的群成员信息
+3. 在AWS Systems Manager Parameter Store中创建相应的参数。 
+   
+创建某个服务需要指定机器人AT的群成员信息：
+
+创建一个参数，采用如下的参数名：
+
+```
+/<BotParaPerfix>/<BotSecretKey>/AtMobiles/<Service NAME>
+```
+
+例如：
+```
+/DingtalkCustomBotParaPrefix/MyBotKey1/AtMobiles/KAFKA
+```
+
+上面示例创建了一个使用默认BotParaPrefix参数值的，使用MyBotKey1作为SecretKey的KAFKA服务的AT群成员信息的参数
+
+在参数中选择“SecureString”作为参数类型。
+
+在参数值中输入指定服务需要通知的群成员的电话号码，用逗号分隔开。
+
+例如：
+```
+12345678901,10987654321
+```
+
+如果群成员钉钉账号注册电话号码如上，当有属于KAKFA的信息到达时，钉钉会AT相关号码的群成员。
 
 ### 修改通知事件类型配置（可选）
 

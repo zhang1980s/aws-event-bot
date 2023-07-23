@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,6 +27,13 @@ type Markdown struct {
 type OapiRobotSendRequest struct {
 	MsgType  string   `json:"msgtype"`
 	Markdown Markdown `json:"markdown,omitempty"`
+	At       At       `json:"at,omitempty"`
+}
+
+type At struct {
+	AtMobiles []string `json:"atMobiles,omitempty"`
+	AtUserIds []string `json:"atUserIds,omitempty"`
+	IsAtAll   string   `json:"isAtAll,omitempty"`
 }
 
 type OapiRobotSendResponse struct {
@@ -59,9 +67,9 @@ type HealthEvent struct {
 func formatMarkdown(healthevent HealthEvent) string {
 	var buffer strings.Builder
 
-	buffer.WriteString("#AWS 健康事件通知\n")
-	buffer.WriteString("---\n")
-	buffer.WriteString("#### **事件类型:**\t")
+	buffer.WriteString("AWS 健康事件通知\t")
+	buffer.WriteString("\n--------\t")
+	buffer.WriteString("\n#### **事件类型:**\t")
 	buffer.WriteString(healthevent.DetailType)
 	buffer.WriteString("\n#### **账号:**\t")
 	buffer.WriteString(healthevent.Account)
@@ -93,6 +101,39 @@ func formatMarkdown(healthevent HealthEvent) string {
 	return buffer.String()
 }
 
+func GetSSMParameter(ctx context.Context, parameterName string) (string, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+
+	if err != nil {
+		logrus.Errorf("failed to load AWS config: %s", err)
+	}
+
+	svc := ssm.NewFromConfig(cfg)
+
+	input := &ssm.GetParametersInput{
+		Names:          []string{parameterName},
+		WithDecryption: aws.Bool(true),
+	}
+
+	atMobilesList, err := svc.GetParameters(ctx, input)
+
+	if err != nil {
+		logrus.Errorf("failed to get parameter: %s", err)
+		return "", err
+	}
+
+	return *atMobilesList.Parameters[0].Value, nil
+}
+
+func GetSSMPrefix(ctx context.Context) (string, error) {
+	ssmPrefix := os.Getenv("SSM_PREFIX")
+
+	if ssmPrefix == "" {
+		logrus.Errorf("SSM prifix is not set in environment variable: SSM_PRIFIX")
+	}
+	return ssmPrefix, nil
+}
+
 func GetSecretValue(ctx context.Context) (string, string, error) {
 
 	secretKey := os.Getenv("BOT_SECRET_KEY")
@@ -109,7 +150,7 @@ func GetSecretValue(ctx context.Context) (string, string, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 
 	if err != nil {
-		logrus.Errorf("failed to load AWS config: %w", err)
+		logrus.Errorf("failed to load AWS config: %s", err)
 	}
 
 	svc := secretsmanager.NewFromConfig(cfg)
@@ -119,7 +160,7 @@ func GetSecretValue(ctx context.Context) (string, string, error) {
 	})
 
 	if err != nil {
-		logrus.Errorf("failed to get secret value: %w", err)
+		logrus.Errorf("failed to get secret value: %s", err)
 	}
 
 	secretValue := aws.ToString(output.SecretString)
@@ -146,17 +187,35 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	err := json.Unmarshal([]byte(snsMsg), &healthevent)
 
 	if err != nil {
-		logrus.Errorf("%w", err)
+		logrus.Errorf("%s", err)
 	}
 
 	secretValue, secretKey, _ := GetSecretValue(ctx)
 
-	markdownText := formatMarkdown(healthevent)
+	paraPrefix, _ := GetSSMPrefix(ctx)
+
+	atMobilesParameter := "/" + paraPrefix + "/" + secretKey + "/AtMobiles/" + healthevent.Detail.Service
+
+	atMobilesList, _ := GetSSMParameter(ctx, atMobilesParameter)
+
+	isAtAll := "false"
+
+	if len(atMobilesList) == 0 {
+		isAtAll = "true"
+	}
+
+	phoneNumbers := "@" + strings.ReplaceAll(atMobilesList, ",", " @")
+
+	markdownText := formatMarkdown(healthevent) + "\n-------- \n ##### **事件联系人:** \t\n" + phoneNumbers
 	req := OapiRobotSendRequest{
 		MsgType: "markdown",
 		Markdown: Markdown{
-			Title: "机器人事件:" + secretKey,
+			Title: "AWS健康事件通知: 来自" + secretKey + "机器人",
 			Text:  markdownText,
+		},
+		At: At{
+			AtMobiles: strings.Fields(strings.ReplaceAll(atMobilesList, ",", " ")),
+			IsAtAll:   isAtAll,
 		},
 	}
 
@@ -164,10 +223,12 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	if err != nil {
 		return fmt.Errorf("error encoding JSON: %v", err)
 	}
-	//	logrus.Infof("jsonReq: %s", jsonReq)
-	//	logrus.Infof("webhook: %s", secretValue)
+	logrus.Infof("jsonReq: %s", jsonReq)
 
 	httpReq, err := http.NewRequest("POST", secretValue, bytes.NewBuffer(jsonReq))
+
+	logrus.Infof("httpReq: %v", httpReq)
+
 	if err != nil {
 		return fmt.Errorf("error creating HTTP request: %v", err)
 	}
