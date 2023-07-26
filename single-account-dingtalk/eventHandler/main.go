@@ -122,6 +122,11 @@ func GetSSMParameter(ctx context.Context, parameterName string) (string, error) 
 		return "", err
 	}
 
+	if len(atMobilesList.Parameters) == 0 {
+		logrus.Infof("parameter %s is not set", parameterName)
+		return "", err
+	}
+
 	return *atMobilesList.Parameters[0].Value, nil
 }
 
@@ -196,15 +201,24 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 
 	atMobilesParameter := "/" + paraPrefix + "/" + secretKey + "/AtMobiles/" + healthevent.Detail.Service
 
-	atMobilesList, _ := GetSSMParameter(ctx, atMobilesParameter)
+	defaultAtMobilesParameter := "/" + paraPrefix + "/" + secretKey + "/AtMobiles/DEFAULT"
 
 	isAtAll := "false"
 
-	if len(atMobilesList) == 0 {
-		isAtAll = "true"
+	atMobilesList, _ := GetSSMParameter(ctx, atMobilesParameter)
+	logrus.Infof("The value of atMobilesList when service parameter exist: %s", atMobilesList)
+
+	if atMobilesList == "" {
+		atMobilesList, _ = GetSSMParameter(ctx, defaultAtMobilesParameter)
+		logrus.Infof("The value of atMobilesList when service parameter does not exist but default parameter exist: %s", atMobilesList)
 	}
 
 	phoneNumbers := "@" + strings.ReplaceAll(atMobilesList, ",", " @")
+
+	if atMobilesList == "" {
+		isAtAll = "true"
+		phoneNumbers = ""
+	}
 
 	markdownText := formatMarkdown(healthevent) + "\n-------- \n ##### **事件联系人:** \t\n" + phoneNumbers
 	req := OapiRobotSendRequest{
