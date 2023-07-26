@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awssecretsmanager"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awssns"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awssnssubscriptions"
+	"github.com/sirupsen/logrus"
 
 	//	"github.com/aws/aws-cdk-go/awscdk/v2/awsssm"
 	"github.com/aws/constructs-go/constructs/v10"
@@ -71,10 +72,11 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 	})
 
 	// Example Parameter in AWS System Manager Parameter store
+	//	parameterName := "/" + *botParaPrefix.ValueAsString() + "/" + *botSecretKey.ValueAsString() + "/AtMobiles"
 
 	//	awsssm.NewStringParameter(stack, jsii.String("Example parameter for DingTalk CustomBot in AWS System Manager Parameter store"), &awsssm.StringParameterProps{
 	//		Description:   jsii.String("Example parameter for DingTalk CustomBot in AWS System Manager Parameter store"),
-	//		ParameterName: jsii.String("/" + *botParaPrifix.ValueAsString() + "/" + *botSecretKey.ValueAsString() + "/AtMobiles/EXAMPLE"),
+	//		ParameterName: jsii.String(parameterName),
 	//		Tier:          awsssm.ParameterTier_STANDARD,
 	//		StringValue:   jsii.String("123456789,987654321"),
 	//	})
@@ -130,7 +132,11 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 func main() {
 	app := awscdk.NewApp(nil)
 
-	groupName := app.Node().TryGetContext(jsii.String("groupName")).(string)
+	groupName, ok := app.Node().TryGetContext(jsii.String("groupName")).(string)
+
+	if !ok || groupName == "" {
+		logrus.Errorf("groupName is required")
+	}
 
 	NewDingTalkEventBotStack(app, "EventBotStack-SAD-"+groupName, &DingTalkEventBotStackProps{
 		awscdk.StackProps{
