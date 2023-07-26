@@ -179,7 +179,7 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			logrus.Infof("panic is %v", string(debug.Stack()))
+			logrus.Errorf("panic is %v", string(debug.Stack()))
 		}
 	}()
 
@@ -206,11 +206,11 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	isAtAll := "false"
 
 	atMobilesList, _ := GetSSMParameter(ctx, atMobilesParameter)
-	logrus.Infof("The value of atMobilesList when service parameter exist: %s", atMobilesList)
+	//	logrus.Infof("The value of atMobilesList when service parameter exist: %s", atMobilesList)
 
 	if atMobilesList == "" {
 		atMobilesList, _ = GetSSMParameter(ctx, defaultAtMobilesParameter)
-		logrus.Infof("The value of atMobilesList when service parameter does not exist but default parameter exist: %s", atMobilesList)
+		//		logrus.Infof("The value of atMobilesList when service parameter does not exist but default parameter exist: %s", atMobilesList)
 	}
 
 	phoneNumbers := "@" + strings.ReplaceAll(atMobilesList, ",", " @")
@@ -237,11 +237,11 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 	if err != nil {
 		return fmt.Errorf("error encoding JSON: %v", err)
 	}
-	logrus.Infof("jsonReq: %s", jsonReq)
+	//	logrus.Infof("jsonReq: %s", jsonReq)
 
 	httpReq, err := http.NewRequest("POST", secretValue, bytes.NewBuffer(jsonReq))
 
-	logrus.Infof("httpReq: %v", httpReq)
+	//	logrus.Infof("httpReq: %v", httpReq)
 
 	if err != nil {
 		return fmt.Errorf("error creating HTTP request: %v", err)
