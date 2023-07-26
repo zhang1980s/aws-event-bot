@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awssnssubscriptions"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
+	"github.com/sirupsen/logrus"
 )
 
 type DingTalkEventBotStackProps struct {
@@ -193,7 +194,11 @@ Resources:
 func main() {
 	app := awscdk.NewApp(nil)
 
-	groupName := app.Node().TryGetContext(jsii.String("groupName")).(string)
+	groupName, ok := app.Node().TryGetContext(jsii.String("groupName")).(string)
+
+	if !ok || groupName == "" {
+		logrus.Errorf("groupName is required")
+	}
 
 	NewDingTalkEventBotStack(app, "EventBotStack-MAD-"+groupName, &DingTalkEventBotStackProps{
 		awscdk.StackProps{
