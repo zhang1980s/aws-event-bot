@@ -117,6 +117,19 @@ func NewDingTalkEventBotStack(scope constructs.Construct, id string, props *Ding
 		Actions:   &[]*string{jsii.String("ssm:GetParameters")},
 		Resources: &[]*string{jsii.String("arn:aws:ssm:" + *sprops.Env.Region + ":" + *sprops.Env.Account + ":parameter/" + *botParaPrefix.ValueAsString() + "/" + *botSecretKey.ValueAsString() + "/*")},
 	}))
+
+	dingTalkCustomBotHandler.AddToRolePolicy(awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+		Effect:    awsiam.Effect_ALLOW,
+		Actions:   &[]*string{jsii.String("health:DescribeEventDetailsForOrganization")},
+		Resources: &[]*string{jsii.String("*")},
+	}))
+
+	dingTalkCustomBotHandler.AddToRolePolicy(awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+		Effect:    awsiam.Effect_ALLOW,
+		Actions:   &[]*string{jsii.String("organizations:ListAccounts")},
+		Resources: &[]*string{jsii.String("*")},
+	}))
+
 	// Event Bridge Rule to trigger the DingTalk CustomBot Lambda
 
 	healthEventRule.AddTarget(awseventstargets.NewSnsTopic(dingTalkEventTopic, nil))
