@@ -14,7 +14,6 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/health"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/sirupsen/logrus"
@@ -71,7 +70,6 @@ type HealthEvent struct {
 	} `json:"detail,omitempty"`
 }
 
-// func formatMarkdown(healthevent HealthEvent, eventdetails string) string {
 func formatMarkdown(healthevent HealthEvent) string {
 
 	var buffer strings.Builder
@@ -84,12 +82,8 @@ func formatMarkdown(healthevent HealthEvent) string {
 	buffer.WriteString(healthevent.Account)
 	buffer.WriteString("\n#### **时间:**\t")
 	buffer.WriteString(healthevent.Time)
-	// buffer.WriteString("\n#### **地区:**\t")
-	// buffer.WriteString(healthevent.Region)
 	buffer.WriteString("\n#### **资源:**\t")
 	buffer.WriteString(strings.Join(healthevent.Resources, ","))
-	// buffer.WriteString("\n#### **ARN:**\t")
-	// buffer.WriteString(healthevent.Detail.Arn)
 	buffer.WriteString("\n##### **具体服务:**\t")
 	buffer.WriteString(healthevent.Detail.Service)
 	buffer.WriteString("\n##### **具体事件类型码:**\t")
@@ -110,8 +104,9 @@ func formatMarkdown(healthevent HealthEvent) string {
 	buffer.WriteString(healthevent.Detail.EventScopeCode)
 	buffer.WriteString("\n--------\t")
 	buffer.WriteString("\n#### **事件描述:**\n\n")
-	//	buffer.WriteString(eventdetails)
-	buffer.WriteString(healthevent.Detail.EventDescription[0].LatestDescription)
+	if len(healthevent.Detail.EventDescription) > 0 {
+		buffer.WriteString(healthevent.Detail.EventDescription[0].LatestDescription)
+	}
 
 	return buffer.String()
 }
@@ -190,33 +185,6 @@ func GetSecretValue(ctx context.Context) (string, string, error) {
 	return secretValue, secretKey, nil
 }
 
-func GetEventDetails(ctx context.Context, arn string) string {
-	cfg, err := config.LoadDefaultConfig(ctx)
-
-	if err != nil {
-		logrus.Errorf("failed to load AWS config: %s", err)
-	}
-
-	svc := health.NewFromConfig(cfg)
-
-	input := &health.DescribeEventDetailsInput{
-		EventArns: []string{arn},
-	}
-
-	output, err := svc.DescribeEventDetails(context.TODO(), input)
-	if err != nil {
-		logrus.Errorf("failed to describe event details %s", err)
-	}
-
-	if len(output.SuccessfulSet) <= 0 {
-		eventDetail := output.FailedSet[0]
-		return *eventDetail.ErrorMessage
-	}
-
-	eventDetail := output.SuccessfulSet[0]
-	return *eventDetail.EventDescription.LatestDescription
-}
-
 func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 
 	defer func() {
@@ -262,12 +230,6 @@ func HandleRequest(ctx context.Context, snsEvent events.SNSEvent) error {
 		phoneNumbers = ""
 	}
 
-	// eventDetails := ""
-	// if healthevent.Detail.EventArn != "" {
-	// 	eventDetails = GetEventDetails(ctx, healthevent.Detail.EventArn)
-	// }
-
-	// markdownText := formatMarkdown(healthevent, eventDetails) + "\n-------- \n #### **事件联系人:** \t\n" + phoneNumbers
 	markdownText := formatMarkdown(healthevent) + "\n\n--------\t\n #### **事件联系人:** \t\n" + phoneNumbers
 	req := OapiRobotSendRequest{
 		MsgType: "markdown",
